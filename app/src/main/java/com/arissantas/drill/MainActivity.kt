@@ -151,10 +151,10 @@ fun DrillListPreview() {
     DrillTheme {
         DrillList(
             listOf(
-                Drill(0, false, "25", "Eb scale"),
-                Drill(1, true, "30", "toreadors"),
-                Drill(2, true, "30", "intermezzo"),
-                Drill(3, false, "10", ""),
+                Drill(0, 0, false, "25", "Eb scale"),
+                Drill(0, 1, true, "30", "toreadors"),
+                Drill(0, 2, true, "30", "intermezzo"),
+                Drill(0, 3, false, "10", ""),
             ), {}, {}, {}
         )
     }
@@ -164,6 +164,6 @@ fun DrillListPreview() {
 @Composable
 fun DrillPreview() {
     DrillTheme {
-        DrillEditor(Drill(0, false, "120", "Eb scale"), update = {}, delete = {})
+        DrillEditor(Drill(0, 0, false, "120", "Eb scale"), update = {}, delete = {})
     }
 }

@@ -10,19 +10,22 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalTime
 
 class DrillViewModel : ViewModel() {
 
     val drillDao = MainApplication.drillDatabase.drillDao()
 
     val drills: MutableState<List<Drill>?> = mutableStateOf(null)
+    val day = mutableStateOf(todayDay())
     val pendingSaves = MutableSharedFlow<List<Drill>>()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            drills.value = drillDao.getAll()
+            drills.value = drillDao.getForDay(day.value)
             pendingSaves.debounce(2000L).collectLatest {
-                drillDao.replaceAll(it)
+                drillDao.replaceAll(day.value, it)
             }
         }
     }
@@ -35,19 +38,30 @@ class DrillViewModel : ViewModel() {
         }
     }
 
+    fun todayDay(): Long {
+        val day = LocalDate.now().toEpochDay()
+        return if (LocalTime.now().hour < 3) {
+            day - 1
+        } else {
+            day
+        }
+    }
+
     fun newDrill() {
-        // todo: clean up this garbage
-        drills.value = drills.value?.let { it.plus(Drill(id = it.maxOfOrNull { it.id + 1 } ?: 0)) }
+        drills.value = drills.value?.let {
+            it.plus(Drill(i = it.size, day = day.value))
+        }
     }
 
     fun deleteDrill(drill: Drill) {
-        drills.value = drills.value?.filter { it.id != drill.id }
+        drills.value =
+            drills.value?.filter { it.i != drill.i }?.mapIndexed { i, d -> d.copy(i = i) }
         saveDrills()
     }
 
     fun updateDrill(drill: Drill) {
         drills.value = drills.value?.map {
-            if (it.id == drill.id) {
+            if (it.i == drill.i) {
                 drill
             } else {
                 it
