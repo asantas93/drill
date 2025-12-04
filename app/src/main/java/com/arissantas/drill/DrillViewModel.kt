@@ -35,8 +35,9 @@ class DrillViewModel : ViewModel() {
         }
     }
 
-    fun addDrill() {
-        drills.value = drills.value?.let { it.plus(Drill(id = it.size)) }
+    fun newDrill() {
+        // todo: clean up this garbage
+        drills.value = drills.value?.let { it.plus(Drill(id = it.maxOfOrNull { it.id + 1 } ?: 0)) }
     }
 
     fun deleteDrill(drill: Drill) {

@@ -101,7 +101,7 @@ fun DrillsPage(vm: DrillViewModel) {
         drills.value,
         updateDrill = vm::updateDrill,
         deleteDrill = vm::deleteDrill,
-        addDrill = vm::addDrill
+        newDrill = vm::newDrill
     )
 }
 
@@ -110,7 +110,7 @@ fun DrillList(
     drills: List<Drill>?,
     deleteDrill: (Drill) -> Unit,
     updateDrill: (Drill) -> Unit,
-    addDrill: () -> Unit
+    newDrill: () -> Unit
 ) {
     if (drills != null) {
         val todo = drills.filter { !it.done }
@@ -120,7 +120,7 @@ fun DrillList(
                 DrillEditor(drill = it, update = updateDrill, delete = deleteDrill)
             }
             Button(
-                onClick = { addDrill() },
+                onClick = { newDrill() },
             ) {
                 Icon(
                     Icons.Default.Add,
