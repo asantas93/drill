@@ -30,6 +30,14 @@ class DrillViewModel : ViewModel() {
         }
     }
 
+    fun changeDay(day: Long) {
+        this.day.value = day
+        drills.value = null
+        viewModelScope.launch(Dispatchers.IO) {
+            drills.value = drillDao.getForDay(day)
+        }
+    }
+
     fun saveDrills() {
         drills.value?.let {
             viewModelScope.launch(Dispatchers.IO) {
