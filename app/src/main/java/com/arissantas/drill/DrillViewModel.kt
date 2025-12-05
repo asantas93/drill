@@ -57,7 +57,7 @@ class DrillViewModel : ViewModel() {
 
     fun newDrill() {
         drills.value = drills.value?.let {
-            it.plus(Drill(i = it.size, day = day.value))
+            it.plus(Drill(i = it.size, day = day.value, minutesStr = "15"))
         }
     }
 
