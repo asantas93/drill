@@ -9,11 +9,10 @@ import androidx.compose.ui.unit.dp
 import com.arissantas.drill.model.Drill
 
 @Composable
-fun BottomBar(drills: List<Drill>?) {
-    if (drills != null) {
-        val todo = drills.filter { !it.done }
+fun BottomBar(todo: List<Drill>?, done:  List<Drill>?) {
+    if (todo != null && done != null) {
         val remaining = todo.sumOf { it.minutes() }
-        val total = drills.sumOf { it.minutes() }
+        val total = (todo + done).sumOf { it.minutes() }
         val suffix = if (total == 0) "??" else if (remaining == 0) " :)" else ""
         Text(
             text = "$remaining/${total}m remaining$suffix",

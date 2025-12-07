@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import java.lang.System.currentTimeMillis
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -17,31 +18,42 @@ class DrillViewModel : ViewModel() {
 
     val drillDao = MainApplication.drillDatabase.drillDao()
 
-    val drills: MutableState<List<Drill>?> = mutableStateOf(null)
+    val todo: MutableState<List<Drill>?> = mutableStateOf(null)
+    val done: MutableState<List<Drill>?> = mutableStateOf(null)
     val day = mutableStateOf(todayDay())
-    val pendingSaves = MutableSharedFlow<List<Drill>>()
+    val pendingSaves = MutableSharedFlow<Triple<Long, List<Drill>, List<Drill>>>()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            drills.value = drillDao.getForDay(day.value)
-            pendingSaves.debounce(2000L).collectLatest {
-                drillDao.replaceAll(day.value, it)
+            val drills = drillDao.getForDay(day.value)
+            todo.value = drills.filter { !it.done }.map { it.asUi() }
+            done.value = drills.filter { it.done }.map { it.asUi() }
+            pendingSaves.debounce(2000L).collectLatest { (day, uiTodo, uiDone) ->
+                val dbDrills = uiTodo.mapIndexed { i, drill ->
+                    drill.asDb(day = day, i = i, done = false)
+                } + uiDone.mapIndexed { i, drill ->
+                    drill.asDb(day = day, i = i + uiTodo.size, done = true)
+                }
+                drillDao.replaceAll(day, dbDrills)
             }
         }
     }
 
     fun changeDay(day: Long) {
         this.day.value = day
-        drills.value = null
+        todo.value = null
+        done.value = null
         viewModelScope.launch(Dispatchers.IO) {
-            drills.value = drillDao.getForDay(day)
+            val drills = drillDao.getForDay(day)
+            todo.value = drills.filter { !it.done }.map { it.asUi() }
+            done.value = drills.filter { it.done }.map { it.asUi() }
         }
     }
 
     fun saveDrills() {
-        drills.value?.let {
+        if (todo.value != null && done.value != null) {
             viewModelScope.launch(Dispatchers.IO) {
-                pendingSaves.emit(it)
+                pendingSaves.emit(Triple(day.value, todo.value!!, done.value!!))
             }
         }
     }
@@ -56,35 +68,45 @@ class DrillViewModel : ViewModel() {
     }
 
     fun newDrill() {
-        drills.value = drills.value?.let {
-            it.plus(Drill(i = it.size, day = day.value, minutesStr = "15"))
-        }
+        todo.value = todo.value?.plus(Drill(createdAt = currentTimeMillis(), minutesStr = "15"))
     }
 
     fun deleteDrill(drill: Drill) {
-        drills.value =
-            drills.value?.filter { it.i != drill.i }?.mapIndexed { i, d -> d.copy(i = i) }
+        todo.value = todo.value?.filter { it.createdAt != drill.createdAt }
+        done.value = done.value?.filter { it.createdAt != drill.createdAt }
         saveDrills()
     }
 
     fun updateDrill(drill: Drill) {
-        drills.value = drills.value?.map {
-            if (it.i == drill.i) {
-                drill
-            } else {
-                it
-            }
-        }
+        done.value = done.value?.map { if (it.createdAt == drill.createdAt) drill else it }
+        todo.value = todo.value?.map { if (it.createdAt == drill.createdAt) drill else it }
         saveDrills()
     }
 
-    fun moveDrill(start: Int, end: Int) {
-        drills.value?.let { immutable ->
-            val mutable = immutable.toMutableList()
-            val moved = mutable.removeAt(start)
-            mutable.add(end, moved)
-            drills.value = mutable.mapIndexed { i, drill ->
-                drill.copy(i = i)
+    fun completeDrill(drill: Drill) {
+        todo.value = todo.value!!.filter { it.createdAt != drill.createdAt }
+        done.value = listOf(drill) + done.value!!
+        saveDrills()
+    }
+
+    fun uncompleteDrill(drill: Drill) {
+        done.value = done.value!!.filter { it.createdAt != drill.createdAt }
+        todo.value = todo.value!! + drill
+        saveDrills()
+    }
+
+    fun moveTodo(from: Int, to: Int) {
+        moveDrill(todo, from, to)
+    }
+
+    fun moveDone(from: Int, to: Int) {
+        moveDrill(done, from, to)
+    }
+
+    private fun moveDrill(list: MutableState<List<Drill>?>, from: Int, to: Int) {
+        list.value?.let {
+            list.value = it.toMutableList().apply {
+                add(to, removeAt(from))
             }
             saveDrills()
         }

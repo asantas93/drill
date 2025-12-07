@@ -23,10 +23,14 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     MainPage(
-                        vm.drills.value,
+                        todo = vm.todo.value,
+                        done = vm.done.value,
                         updateDrill = vm::updateDrill,
                         deleteDrill = vm::deleteDrill,
-                        moveDrill = vm::moveDrill,
+                        moveTodo = vm::moveTodo,
+                        moveDone = vm::moveDone,
+                        completeDrill = vm::completeDrill,
+                        uncompleteDrill = vm::uncompleteDrill,
                         newDrill = vm::newDrill,
                         setDay = vm::changeDay,
                         day = vm.day.value

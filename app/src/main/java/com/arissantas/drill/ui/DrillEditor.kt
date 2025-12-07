@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,20 +27,22 @@ import com.arissantas.drill.model.Drill
 @Composable
 fun DrillEditor(
     drill: Drill,
+    done: Boolean,
+    checkAction: (Drill) -> Unit,
     update: (Drill) -> Unit,
     delete: (Drill) -> Unit,
     dragModifier: Modifier = Modifier
 ) {
     Row(
-        modifier = dragModifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Row(verticalAlignment = Alignment.Top, modifier = Modifier.weight(1f)) {
             Checkbox(
                 modifier = Modifier
                     .size(32.dp)
                     .padding(start = 4.dp),
-                checked = drill.done,
-                onCheckedChange = { update(drill.copy(done = it)) },
+                checked = done,
+                onCheckedChange = { checkAction(drill) },
             )
             CompactTextField(
                 value = drill.minutesStr,
@@ -49,17 +50,12 @@ fun DrillEditor(
                     update(drill.copy(minutesStr = v.filter { it.isDigit() }))
                 },
                 textAlign = TextAlign.End,
-                modifier = Modifier
+                modifier = dragModifier
                     .width(48.dp)
                     .padding(top = 4.dp),
                 isError = drill.minutesStr.isNotEmpty() && !drill.minutesStr.isDigitsOnly(),
                 suffix = { Text("m") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            )
-            Icon(
-                imageVector = Icons.Default.DragHandle,
-                contentDescription = "drag to reorder",
-                modifier = Modifier.padding(end = 4.dp)
             )
             CompactTextField(
                 value = drill.description,
