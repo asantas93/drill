@@ -3,6 +3,7 @@ package com.arissantas.drill
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,13 +15,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -36,17 +40,23 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModelProvider
 import com.arissantas.drill.model.Drill
@@ -75,13 +85,20 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DrillEditor(drill: Drill, update: (Drill) -> Unit, delete: (Drill) -> Unit) {
+fun DrillEditor(
+    drill: Drill,
+    update: (Drill) -> Unit,
+    delete: (Drill) -> Unit,
+    dragModifier: Modifier = Modifier
+) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = dragModifier.fillMaxWidth(),
     ) {
         Row(verticalAlignment = Alignment.Top, modifier = Modifier.weight(1f)) {
             Checkbox(
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier
+                    .size(32.dp)
+                    .padding(start = 4.dp),
                 checked = drill.done,
                 onCheckedChange = { update(drill.copy(done = it)) },
             )
@@ -93,9 +110,15 @@ fun DrillEditor(drill: Drill, update: (Drill) -> Unit, delete: (Drill) -> Unit) 
                 textAlign = TextAlign.End,
                 modifier = Modifier
                     .width(48.dp)
-                    .padding(vertical = 8.dp),
+                    .padding(top = 4.dp),
                 isError = drill.minutesStr.isNotEmpty() && !drill.minutesStr.isDigitsOnly(),
                 suffix = { Text("m") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+            Icon(
+                imageVector = Icons.Default.DragHandle,
+                contentDescription = "drag to reorder",
+                modifier = Modifier.padding(end = 4.dp)
             )
             CompactTextField(
                 value = drill.description,
@@ -107,14 +130,14 @@ fun DrillEditor(drill: Drill, update: (Drill) -> Unit, delete: (Drill) -> Unit) 
                 },
                 modifier = Modifier
                     .weight(1f)
-                    .padding(vertical = 8.dp),
+                    .padding(top = 4.dp),
                 onValueChange = { update(drill.copy(description = it)) },
             )
         }
-        Row(modifier = Modifier.padding(end = 8.dp, top = 8.dp)) {
+        Row(modifier = Modifier.padding(end = 4.dp, top = 4.dp)) {
             IconButton(
                 onClick = { delete(drill) },
-                modifier = Modifier.size(25.dp, 25.dp),
+                modifier = Modifier.size(24.dp, 24.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
@@ -135,6 +158,7 @@ fun CompactTextField(
     isError: Boolean = false,
     suffix: (@Composable () -> Unit)? = null,
     placeholder: (@Composable () -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(),
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     BasicTextField(
@@ -146,7 +170,7 @@ fun CompactTextField(
         ),
         modifier = modifier,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = keyboardOptions,
     ) { innerTextField ->
         TextFieldDefaults.DecorationBox(
             interactionSource = interactionSource,
@@ -181,6 +205,7 @@ fun DrillsPage(vm: DrillViewModel) {
         vm.drills.value,
         updateDrill = vm::updateDrill,
         deleteDrill = vm::deleteDrill,
+        moveDrill = vm::moveDrill,
         newDrill = vm::newDrill,
         setDay = vm::changeDay,
         day = vm.day.value
@@ -195,6 +220,7 @@ fun DrillList(
     setDay: (Long) -> Unit,
     deleteDrill: (Drill) -> Unit,
     updateDrill: (Drill) -> Unit,
+    moveDrill: (Int, Int) -> Unit,
     newDrill: () -> Unit
 ) {
     Scaffold(
@@ -263,9 +289,65 @@ fun DrillList(
         if (drills != null) {
             val todo = drills.filter { !it.done }
             val done = drills.filter { it.done }
-            Column(modifier = Modifier.padding(innerPadding)) {
-                todo.forEach {
-                    DrillEditor(drill = it, update = updateDrill, delete = deleteDrill)
+            val scrollState = rememberScrollState()
+            var dragState by remember {
+                mutableStateOf<Triple<Int, Float, Drill?>?>(null)
+            }
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .verticalScroll(scrollState)
+            ) {
+                todo.forEachIndexed { i, drill ->
+                    val isBeingDragged = dragState?.first == i
+                    val verticalOffset = if (isBeingDragged) dragState?.second ?: 0f else 0f
+                    // fixme: calculate offset based on cumulative sum of heights
+                    // todo: animate move preview
+                    DrillEditor(
+                        drill = drill,
+                        update = updateDrill,
+                        delete = deleteDrill,
+                        dragModifier = Modifier
+                            .pointerInput(Unit) {
+                                detectDragGesturesAfterLongPress(
+                                    onDragStart = {
+                                        dragState = Triple(i, 0f, drill)
+                                        println("drag $i")
+                                    },
+                                    onDragEnd = {
+                                        println("drag end")
+                                        dragState?.let { (startIndex, offset, _) ->
+                                            val itemHeight = size.height.toFloat()
+                                            val finalOffset = offset + itemHeight / 2
+                                            val finalIndex =
+                                                (startIndex + (finalOffset / itemHeight).toInt())
+                                                    .coerceIn(0, todo.size - 1)
+                                            println("drag end $startIndex -> $finalIndex")
+                                            if (startIndex != finalIndex) {
+                                                moveDrill(startIndex, finalIndex)
+                                            }
+                                        }
+                                        dragState = null
+                                    },
+                                    onDragCancel = {
+                                        println("drag cancel")
+                                        dragState = null
+                                    },
+                                    onDrag = { change, dragAmount ->
+                                        println("drag $dragAmount ${dragState?.second}")
+                                        change.consume()
+                                        dragState =
+                                            dragState?.copy(second = dragState!!.second + dragAmount.y)
+                                    }
+                                )
+                            }
+                            .graphicsLayer {
+                                translationY = verticalOffset
+                                scaleX = if (isBeingDragged) 1.05f else 1f
+                                scaleY = if (isBeingDragged) 1.05f else 1f
+                            }
+                            .zIndex(if (isBeingDragged) 1f else 0f)
+                    )
                 }
                 IconButton(
                     onClick = { newDrill() },
@@ -313,7 +395,7 @@ fun DrillListPreview() {
                 Drill(0, 1, true, "30", "toreadors"),
                 Drill(0, 2, true, "30", "intermezzo"),
                 Drill(0, 3, false, "15", ""),
-            ), 0, setDay = {}, {}, {}, {}
+            ), 0, setDay = {}, {}, {}, { _, _ -> }, {}
         )
     }
 }

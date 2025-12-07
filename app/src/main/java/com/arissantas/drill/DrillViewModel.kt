@@ -77,4 +77,16 @@ class DrillViewModel : ViewModel() {
         }
         saveDrills()
     }
+
+    fun moveDrill(start: Int, end: Int) {
+        drills.value?.let { immutable ->
+            val mutable = immutable.toMutableList()
+            val moved = mutable.removeAt(start)
+            mutable.add(end, moved)
+            drills.value = mutable.mapIndexed { i, drill ->
+                drill.copy(i = i)
+            }
+            saveDrills()
+        }
+    }
 }
