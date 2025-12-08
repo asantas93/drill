@@ -45,6 +45,9 @@ import java.time.LocalDate
 fun MainPage(
     todo: List<Drill>?,
     done: List<Drill>?,
+    previouslyScheduledNotPassed: Int,
+    previouslyCompleted: Int,
+    goal: Int,
     day: Long,
     setDay: (Long) -> Unit,
     deleteDrill: (Drill) -> Unit,
@@ -72,7 +75,14 @@ fun MainPage(
             BottomAppBar(
                 modifier = Modifier.height(60.dp),
                 content = {
-                    BottomBar(todo = todo, done = done)
+                    BottomBar(
+                        scheduledToday = todo?.sumOf { it.minutes() } ?: 0,
+                        completedToday = done?.sumOf { it.minutes()} ?: 0,
+                        previouslyScheduledNotPassed = previouslyScheduledNotPassed,
+                        previouslyCompleted = previouslyCompleted,
+                        goal = goal,
+                        day = day
+                    )
                 }
             )
         },
@@ -196,7 +206,7 @@ fun MainPage(
 }
 
 @Composable
-fun DummyMain(todo: List<Drill>?, done: List<Drill>?, day: Long) {
+fun DummyMain(todo: List<Drill>?, done: List<Drill>?, day: Long, previouslyScheduledNotPassed: Int, previouslyCompleted: Int, goal: Int) {
     DrillTheme {
         MainPage(
             todo = todo,
@@ -210,6 +220,9 @@ fun DummyMain(todo: List<Drill>?, done: List<Drill>?, day: Long) {
             moveTodo = { _, _ -> },
             newDrill = { },
             repeatPrevDay = { },
+            previouslyScheduledNotPassed = previouslyScheduledNotPassed,
+            previouslyCompleted = previouslyCompleted,
+            goal = goal,
         )
     }
 }
@@ -226,7 +239,10 @@ fun MainPagePreview() {
             Drill(2, "30", "toreadors"),
             Drill(3, "30", "intermezzo"),
         ),
-        day = LocalDate.now().toEpochDay(),
+        day = 20436,
+        goal = 420,
+        previouslyScheduledNotPassed = 100,
+        previouslyCompleted = 300
     )
 }
 
@@ -236,6 +252,9 @@ fun EmptyMainPreview() {
     DummyMain(
             todo = listOf(),
             done = listOf(),
-            day = LocalDate.now().toEpochDay(),
+        day = 20430,
+        goal = 420,
+        previouslyScheduledNotPassed = 0,
+        previouslyCompleted = 300
     )
 }

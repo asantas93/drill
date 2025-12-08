@@ -20,15 +20,18 @@ class DrillViewModel : ViewModel() {
     val dayDrillsCache = HashMap<Long, Pair<List<Drill>, List<Drill>>>()
 
     val todo: MutableState<List<Drill>?> = mutableStateOf(null)
+    val prevTodo: MutableState<List<Drill>?> = mutableStateOf(null)
+    val goal = mutableStateOf(420) // fixme
+    val previouslyScheduledNotPassed = mutableStateOf(0)
+    val previouslyCompleted = mutableStateOf(0)
     val done: MutableState<List<Drill>?> = mutableStateOf(null)
     val day = mutableStateOf(todayDay())
     val pendingSaves = MutableSharedFlow<Triple<Long, List<Drill>, List<Drill>>>()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            val drills = getDayDrills(day.value)
-            todo.value = drills.first
-            done.value = drills.second
+            loadWeekDrills(day.value)
+            updateDayStateFromCache()
             pendingSaves.debounce(2000L).collectLatest { (day, uiTodo, uiDone) ->
                 val dbDrills = uiTodo.mapIndexed { i, drill ->
                     drill.asDb(day = day, i = i, done = false)
@@ -40,6 +43,18 @@ class DrillViewModel : ViewModel() {
         }
     }
 
+    private fun updateDayStateFromCache() {
+        val drills = dayDrillsCache[day.value]
+        todo.value = drills?.first
+        done.value = drills?.second
+        prevTodo.value = dayDrillsCache[day.value - 1]?.first
+        previouslyCompleted.value = (weekBegin(day.value) until day.value)
+            .sumOf { d-> dayDrillsCache[d]!!.second.sumOf{it.minutes()}}
+        // don't count scheduled drills from days in the past
+        previouslyScheduledNotPassed.value = (todayDay() until day.value)
+            .sumOf { d -> dayDrillsCache[d]!!.first.sumOf { it.minutes() } }
+    }
+
     private suspend fun getDayDrills(day: Long): Pair<List<Drill>, List<Drill>> {
         if (dayDrillsCache.contains(day)) {
             return dayDrillsCache[day]!!
@@ -48,19 +63,37 @@ class DrillViewModel : ViewModel() {
             val pair = Pair(
                 drills.filter { !it.done }.map { it.asUi() },
                 drills.filter { it.done }.map { it.asUi() })
-            dayDrillsCache.putIfAbsent(day, pair)
+            dayDrillsCache.putIfAbsent(day, pair) // ifAbsent correct/needed?
             return pair
         }
+    }
+
+    private suspend fun loadWeekDrills(day: Long) {
+        val relevantDays = List(8) { weekBegin(day) - 1 + it }
+        if (relevantDays.any { !dayDrillsCache.contains(it) }) {
+            val drills = drillDao.getForDays(relevantDays.first(), relevantDays.last())
+            relevantDays.forEach { d ->
+                val dayDrills = drills.filter { it.day == d }
+                val pair = Pair(
+                    dayDrills.filter { !it.done }.map { it.asUi() },
+                    dayDrills.filter { it.done }.map { it.asUi() })
+                dayDrillsCache.putIfAbsent(d, pair) // ifAbsent correct/needed?
+            }
+        }
+    }
+
+    private fun weekBegin(day: Long): Long {
+        return day - (LocalDate.ofEpochDay(day).dayOfWeek.value - 1)
     }
 
     fun changeDay(day: Long) {
         this.day.value = day
         todo.value = null
         done.value = null
+        // todo: don't launch on cache hit
         viewModelScope.launch(Dispatchers.IO) {
-            val drills = getDayDrills(day)
-            todo.value = drills.first
-            done.value = drills.second
+            loadWeekDrills(day)
+            updateDayStateFromCache()
         }
     }
 

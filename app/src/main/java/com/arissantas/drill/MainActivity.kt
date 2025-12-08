@@ -34,6 +34,9 @@ class MainActivity : ComponentActivity() {
                         setDay = vm::changeDay,
                         day = vm.day.value,
                         repeatPrevDay = vm::repeatPrevDay,
+                        goal = vm.goal.value,
+                        previouslyScheduledNotPassed = vm.previouslyScheduledNotPassed.value,
+                        previouslyCompleted = vm.previouslyCompleted.value,
                     )
                 }
             }

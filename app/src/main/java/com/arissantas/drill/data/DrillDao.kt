@@ -15,7 +15,6 @@ interface DrillDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertAll(drills: List<DbDrill>)
 
-    // fixme
     @Query("DELETE from drill where day = :day")
     suspend fun deleteDay(day: Long)
 
@@ -28,4 +27,7 @@ interface DrillDao {
 
     @Query("SELECT * from drill where day = :day order by i ASC")
     suspend fun getForDay(day: Long): List<DbDrill>
+
+    @Query("SELECT * from drill where day between :start and :end order by day, i ASC")
+    suspend fun getForDays(start: Long, end: Long): List<DbDrill>
 }
