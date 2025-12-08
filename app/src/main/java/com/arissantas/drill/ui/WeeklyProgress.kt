@@ -34,11 +34,12 @@ fun WeeklyProgress(
     val dayGoal = dayOfWeek * goal / 7
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(24.dp)
+            .fillMaxWidth(.75f)
+            .height(24.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         val dayGoalText = if (total >= dayGoal) "+${total - dayGoal}m" else "-${dayGoal - total}m"
-        Text(dayGoalText, modifier = Modifier.padding(horizontal = 4.dp))
+        Text(dayGoalText, modifier = Modifier.padding(horizontal = 4.dp), style = MaterialTheme.typography.bodySmall)
         Box(
             modifier = Modifier.weight(1f)
         ) {
@@ -148,8 +149,6 @@ fun WeeklyProgress(
                 }
             }
         }
-        val weekGoalText = if (total >= goal) "+${total - goal}m" else "-${goal - total}m"
-        Text(weekGoalText, modifier = Modifier.padding(horizontal = 4.dp))
     }
 }
 
