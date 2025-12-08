@@ -26,20 +26,26 @@ fun WeeklyProgress(
     completed: Int,
     scheduled: Int,
     goal: Int,
-    day: Long
+    day: Long,
+    modifier: Modifier = Modifier
+        .fillMaxWidth(.75f)
+        .height(24.dp)
 ) {
     val total = completed + scheduled
     val full = max(total, goal).toFloat()
     val dayOfWeek = LocalDate.ofEpochDay(day).dayOfWeek.value
     val dayGoal = dayOfWeek * goal / 7
     Row(
-        modifier = Modifier
-            .fillMaxWidth(.75f)
-            .height(24.dp),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         val dayGoalText = if (total >= dayGoal) "+${total - dayGoal}m" else "-${dayGoal - total}m"
-        Text(dayGoalText, modifier = Modifier.padding(horizontal = 4.dp), style = MaterialTheme.typography.bodySmall)
+        Text(
+            text = dayGoalText,
+            modifier = Modifier.padding(horizontal = 4.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         Box(
             modifier = Modifier.weight(1f)
         ) {
@@ -74,29 +80,31 @@ fun WeeklyProgress(
                     )
                 }
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-            ) {
-                Box(
+            if (dayGoal != goal) {
+                Row(
                     modifier = Modifier
-                        .weight(dayGoal.toFloat())
+                        .fillMaxWidth()
                         .fillMaxHeight()
-                        .border(
-                            BorderStroke(
-                                1.dp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            shape = RoundedCornerShape(4.dp)
-                        )
-                )
-                if (full > 0) {
+                ) {
                     Box(
                         modifier = Modifier
-                            .weight(full - dayGoal)
+                            .weight(dayGoal.toFloat())
                             .fillMaxHeight()
+                            .border(
+                                BorderStroke(
+                                    1.dp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                shape = RoundedCornerShape(4.dp)
+                            )
                     )
+                    if (full > 0 && full > dayGoal) {
+                        Box(
+                            modifier = Modifier
+                                .weight(full - dayGoal)
+                                .fillMaxHeight()
+                        )
+                    }
                 }
             }
             if (full > goal) {
@@ -112,7 +120,7 @@ fun WeeklyProgress(
                             .border(
                                 BorderStroke(
                                     1.dp,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 shape = RoundedCornerShape(4.dp)
                             )
@@ -134,7 +142,7 @@ fun WeeklyProgress(
                         .fillMaxWidth()
                         .fillMaxHeight()
                         .border(
-                            BorderStroke(1.dp, color = MaterialTheme.colorScheme.onBackground),
+                            BorderStroke(1.dp, color = MaterialTheme.colorScheme.onSurfaceVariant),
                             shape = RoundedCornerShape(4.dp)
                         )
                         .weight(goal.toFloat())
