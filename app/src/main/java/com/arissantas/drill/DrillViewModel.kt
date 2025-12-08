@@ -99,10 +99,6 @@ class DrillViewModel : ViewModel() {
         moveDrill(todo, from, to)
     }
 
-    fun moveDone(from: Int, to: Int) {
-        moveDrill(done, from, to)
-    }
-
     private fun moveDrill(list: MutableState<List<Drill>?>, from: Int, to: Int) {
         list.value?.let {
             list.value = it.toMutableList().apply {

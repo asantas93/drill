@@ -28,7 +28,6 @@ class MainActivity : ComponentActivity() {
                         updateDrill = vm::updateDrill,
                         deleteDrill = vm::deleteDrill,
                         moveTodo = vm::moveTodo,
-                        moveDone = vm::moveDone,
                         completeDrill = vm::completeDrill,
                         uncompleteDrill = vm::uncompleteDrill,
                         newDrill = vm::newDrill,

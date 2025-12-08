@@ -44,7 +44,7 @@ fun CompactTextField(
             innerTextField = innerTextField,
             value = value,
             enabled = true,
-            contentPadding = PaddingValues(end = 8.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp),
             singleLine = false,
             suffix = suffix,
             placeholder = placeholder,
@@ -55,7 +55,7 @@ fun CompactTextField(
                     isError = isError,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.surface,
+                        unfocusedIndicatorColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
                         disabledContainerColor = MaterialTheme.colorScheme.surface,
                     ),

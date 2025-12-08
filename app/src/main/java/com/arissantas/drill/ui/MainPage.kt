@@ -1,9 +1,11 @@
 package com.arissantas.drill.ui
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -48,7 +50,6 @@ fun MainPage(
     completeDrill: (Drill) -> Unit,
     uncompleteDrill: (Drill) -> Unit,
     moveTodo: (Int, Int) -> Unit,
-    moveDone: (Int, Int) -> Unit,
     newDrill: () -> Unit
 ) {
     Scaffold(
@@ -71,7 +72,8 @@ fun MainPage(
                     BottomBar(todo = todo, done = done)
                 }
             )
-        }
+        },
+        modifier = Modifier.imePadding()
     ) { innerPadding ->
         if (todo != null && done != null) {
             val hapticFeedback = LocalHapticFeedback.current
@@ -86,7 +88,8 @@ fun MainPage(
 
             LazyColumn(
                 state = lazyListState,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding),
+                verticalArrangement = Arrangement.spacedBy((-1).dp),
             ) {
                 items(todo, key = { it.createdAt }) {
                     ReorderableItem(
@@ -182,7 +185,6 @@ fun MainPagePreview() {
             completeDrill = { },
             uncompleteDrill = { },
             moveTodo = { _, _ -> },
-            moveDone = { _, _ -> },
             newDrill = { },
         )
     }
