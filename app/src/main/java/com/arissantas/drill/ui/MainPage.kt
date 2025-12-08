@@ -1,9 +1,6 @@
 package com.arissantas.drill.ui
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -78,113 +74,82 @@ fun MainPage(
         }
     ) { innerPadding ->
         if (todo != null && done != null) {
-            Column(
-                modifier = Modifier
-                    .padding(innerPadding)
+            val hapticFeedback = LocalHapticFeedback.current
+
+            val lazyListState = rememberLazyListState()
+            val reorderableLazyListState =
+                rememberReorderableLazyListState(lazyListState) { from, to ->
+                    moveTodo(from.index, to.index)
+
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                }
+
+            LazyColumn(
+                state = lazyListState,
+                modifier = Modifier.padding(innerPadding)
             ) {
-                val hapticFeedback = LocalHapticFeedback.current
+                items(todo, key = { it.createdAt }) {
+                    ReorderableItem(
+                        reorderableLazyListState,
+                        key = it.createdAt
+                    ) { isDragging ->
+                        val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
 
-                val lazyListState = rememberLazyListState()
-                val reorderableLazyListState =
-                    rememberReorderableLazyListState(lazyListState) { from, to ->
-                        moveTodo(from.index, to.index)
-
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
-                    }
-
-                LazyColumn(
-                    state = lazyListState,
-                    contentPadding = PaddingValues(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(todo, key = { it.createdAt }) {
-                        ReorderableItem(
-                            reorderableLazyListState,
-                            key = it.createdAt
-                        ) { isDragging ->
-                            val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
-
-                            Surface(shadowElevation = elevation) {
-                                DrillEditor(
-                                    drill = it,
-                                    update = updateDrill,
-                                    delete = deleteDrill,
-                                    checkAction = completeDrill,
-                                    done = false,
-                                    dragModifier = Modifier.draggableHandle(
-                                        onDragStarted = {
-                                            hapticFeedback.performHapticFeedback(
-                                                HapticFeedbackType.GestureThresholdActivate
-                                            )
-                                        },
-                                        onDragStopped = {
-                                            hapticFeedback.performHapticFeedback(
-                                                HapticFeedbackType.GestureEnd
-                                            )
-                                        },
-                                    )
+                        Surface(shadowElevation = elevation) {
+                            DrillEditor(
+                                drill = it,
+                                update = updateDrill,
+                                delete = deleteDrill,
+                                checkAction = completeDrill,
+                                done = false,
+                                dragModifier = Modifier.draggableHandle(
+                                    onDragStarted = {
+                                        hapticFeedback.performHapticFeedback(
+                                            HapticFeedbackType.GestureThresholdActivate
+                                        )
+                                    },
+                                    onDragStopped = {
+                                        hapticFeedback.performHapticFeedback(
+                                            HapticFeedbackType.GestureEnd
+                                        )
+                                    },
                                 )
-                            }
+                            )
                         }
                     }
                 }
-                // var list by remember { mutableStateOf(todo) }
-                // val lazyListState = rememberLazyListState()
-                // val reorderableLazyListState =
-                //     rememberReorderableLazyListState(lazyListState) { from, to ->
-                //         //moveDrill(from.index, to.index)
-                //         list = list.toMutableList().apply {
-                //             add(to.index, removeAt(from.index))
-                //         }
-                //     }
-                // LazyColumn(state = lazyListState) {
-                //     items(list, key = { it.description }) { drill ->
-                //         ReorderableItem(
-                //             reorderableLazyListState,
-                //             key = { drill.description }) { isDragging ->
-                //             val interactionSource = remember { MutableInteractionSource() }
-                //             // Item content
-                //             Row {
-                //                 DrillEditor(
-                //                     drill = drill,
-                //                     update = updateDrill,
-                //                     delete = deleteDrill,
-                //                     dragModifier = Modifier.draggableHandle(),
-                //                 )
-                //             }
-                //         }
-                //     }
-                // }
-                IconButton(
-                    onClick = { newDrill() },
-                    modifier = Modifier
-                        .height(40.dp)
-                        .fillMaxWidth(),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = "add new drill",
-                            Modifier
-                                .height(36.dp)
-                                .padding(horizontal = 12.dp)
-                        )
-                        Text(
-                            text = "add a drill...",
-                            fontStyle = FontStyle.Italic,
-                            modifier = Modifier.weight(1f),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                item {
+                    IconButton(
+                        onClick = { newDrill() },
+                        modifier = Modifier
+                            .height(40.dp)
+                            .fillMaxWidth(),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = "add new drill",
+                                Modifier
+                                    .height(36.dp)
+                                    .padding(horizontal = 12.dp)
+                            )
+                            Text(
+                                text = "add a drill...",
+                                fontStyle = FontStyle.Italic,
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                 }
-                done.forEach {
+                items(done, key = { it.createdAt }) {
                     DrillEditor(
                         drill = it,
                         update = updateDrill,
                         delete = deleteDrill,
                         checkAction = uncompleteDrill,
                         done = true,
-                        )
+                    )
                 }
             }
         } else {
@@ -216,7 +181,7 @@ fun MainPagePreview() {
             updateDrill = {},
             completeDrill = { },
             uncompleteDrill = { },
-            moveTodo = { _, _ ->},
+            moveTodo = { _, _ -> },
             moveDone = { _, _ -> },
             newDrill = { },
         )
