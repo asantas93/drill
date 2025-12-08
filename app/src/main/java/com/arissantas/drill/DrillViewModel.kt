@@ -17,6 +17,7 @@ import java.time.LocalTime
 class DrillViewModel : ViewModel() {
 
     val drillDao = MainApplication.drillDatabase.drillDao()
+    val dayDrillsCache = HashMap<Long, Pair<List<Drill>, List<Drill>>>()
 
     val todo: MutableState<List<Drill>?> = mutableStateOf(null)
     val done: MutableState<List<Drill>?> = mutableStateOf(null)
@@ -25,9 +26,9 @@ class DrillViewModel : ViewModel() {
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            val drills = drillDao.getForDay(day.value)
-            todo.value = drills.filter { !it.done }.map { it.asUi() }
-            done.value = drills.filter { it.done }.map { it.asUi() }
+            val drills = getDayDrills(day.value)
+            todo.value = drills.first
+            done.value = drills.second
             pendingSaves.debounce(2000L).collectLatest { (day, uiTodo, uiDone) ->
                 val dbDrills = uiTodo.mapIndexed { i, drill ->
                     drill.asDb(day = day, i = i, done = false)
@@ -39,19 +40,45 @@ class DrillViewModel : ViewModel() {
         }
     }
 
+    private suspend fun getDayDrills(day: Long): Pair<List<Drill>, List<Drill>> {
+        if (dayDrillsCache.contains(day)) {
+            return dayDrillsCache[day]!!
+        } else {
+            val drills = drillDao.getForDay(day)
+            val pair = Pair(
+                drills.filter { !it.done }.map { it.asUi() },
+                drills.filter { it.done }.map { it.asUi() })
+            dayDrillsCache.putIfAbsent(day, pair)
+            return pair
+        }
+    }
+
     fun changeDay(day: Long) {
         this.day.value = day
         todo.value = null
         done.value = null
         viewModelScope.launch(Dispatchers.IO) {
-            val drills = drillDao.getForDay(day)
-            todo.value = drills.filter { !it.done }.map { it.asUi() }
-            done.value = drills.filter { it.done }.map { it.asUi() }
+            val drills = getDayDrills(day)
+            todo.value = drills.first
+            done.value = drills.second
+        }
+    }
+
+    fun repeatPrevDay() {
+        val prev = day.value - 1
+        viewModelScope.launch(Dispatchers.IO) {
+            val drills = getDayDrills(prev)
+            val t = currentTimeMillis()
+            todo.value = (drills.first + drills.second).mapIndexed { i, drill ->
+                drill.copy(createdAt = t + i) // add i for uniqueness
+            }
+            saveDrills()
         }
     }
 
     fun saveDrills() {
         if (todo.value != null && done.value != null) {
+            dayDrillsCache[day.value] = Pair(todo.value!!, done.value!!)
             viewModelScope.launch(Dispatchers.IO) {
                 pendingSaves.emit(Triple(day.value, todo.value!!, done.value!!))
             }

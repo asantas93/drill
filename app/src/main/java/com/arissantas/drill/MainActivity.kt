@@ -32,7 +32,8 @@ class MainActivity : ComponentActivity() {
                         uncompleteDrill = vm::uncompleteDrill,
                         newDrill = vm::newDrill,
                         setDay = vm::changeDay,
-                        day = vm.day.value
+                        day = vm.day.value,
+                        repeatPrevDay = vm::repeatPrevDay,
                     )
                 }
             }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,6 +38,7 @@ import com.arissantas.drill.model.Drill
 import com.arissantas.drill.ui.theme.DrillTheme
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +52,8 @@ fun MainPage(
     completeDrill: (Drill) -> Unit,
     uncompleteDrill: (Drill) -> Unit,
     moveTodo: (Int, Int) -> Unit,
-    newDrill: () -> Unit
+    newDrill: () -> Unit,
+    repeatPrevDay: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -145,6 +148,33 @@ fun MainPage(
                         }
                     }
                 }
+                if (todo.isEmpty() && done.isEmpty()) {
+                    item {
+                        IconButton(
+                            onClick = { repeatPrevDay() },
+                            modifier = Modifier
+                                .height(40.dp)
+                                .fillMaxWidth(),
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.Replay,
+                                    contentDescription = "copy previous day's drills",
+                                    Modifier
+                                        .height(36.dp)
+                                        .padding(horizontal = 12.dp)
+                                )
+                                val dayText = if (day == LocalDate.now().toEpochDay()) "yesterday" else "previous day"
+                                Text(
+                                    text = "repeat $dayText's practice",
+                                    fontStyle = FontStyle.Italic,
+                                    modifier = Modifier.weight(1f),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
                 items(done, key = { it.createdAt }) {
                     DrillEditor(
                         drill = it,
@@ -165,20 +195,13 @@ fun MainPage(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun MainPagePreview() {
+fun DummyMain(todo: List<Drill>?, done: List<Drill>?, day: Long) {
     DrillTheme {
         MainPage(
-            todo = listOf(
-                Drill(0, "25", "Eb scale, 3 octaves"),
-                Drill(4, "15", ""),
-            ),
-            done = listOf(
-                Drill(2, "30", "toreadors"),
-                Drill(3, "30", "intermezzo"),
-            ),
-            day = 0,
+            todo = todo,
+            done = done,
+            day = day,
             setDay = {},
             deleteDrill = {},
             updateDrill = {},
@@ -186,6 +209,33 @@ fun MainPagePreview() {
             uncompleteDrill = { },
             moveTodo = { _, _ -> },
             newDrill = { },
+            repeatPrevDay = { },
         )
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainPagePreview() {
+    DummyMain(
+        todo = listOf(
+            Drill(0, "25", "Eb scale, 3 octaves"),
+            Drill(4, "15", ""),
+        ),
+        done = listOf(
+            Drill(2, "30", "toreadors"),
+            Drill(3, "30", "intermezzo"),
+        ),
+        day = LocalDate.now().toEpochDay(),
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EmptyMainPreview() {
+    DummyMain(
+            todo = listOf(),
+            done = listOf(),
+            day = LocalDate.now().toEpochDay(),
+    )
 }
