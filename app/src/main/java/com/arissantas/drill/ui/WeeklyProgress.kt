@@ -164,6 +164,15 @@ fun WeeklyProgressPreview() {
 
 @Preview(showBackground = true)
 @Composable
+fun WeeklyProgressAllDonePreview() {
+    DrillTheme {
+        // monday
+        WeeklyProgress(120, 0, 180 * 7, 20430)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
 fun WeeklyProgressAllTodoPreview() {
     DrillTheme {
         // monday
