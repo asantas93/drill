@@ -40,7 +40,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arissantas.drill.model.Drill
 import com.arissantas.drill.ui.theme.DrillTheme
-import kotlinx.coroutines.delay
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.time.LocalDate
@@ -141,7 +140,7 @@ fun MainScreen(
           }
           if (focused == drill.createdAt) {
             LaunchedEffect(focused) {
-              delay(100)
+              // delay(100)
               focusRequester.requestFocus()
               onFocusHandled()
             }
