@@ -134,7 +134,7 @@ fun MainScreen(
                           },
                       ),
                   descFocusRequester = if (shouldFocus) focusRequester else FocusRequester.Default,
-                  onDescReturn = { newDrill(i + 1) },
+                  onDescNext = { newDrill(i + 1) },
               )
             }
           }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,7 +43,7 @@ fun DrillEditor(
     update: (Drill) -> Unit,
     delete: (Drill) -> Unit,
     dragModifier: Modifier = Modifier,
-    onDescReturn: () -> Unit = {},
+    onDescNext: () -> Unit = {},
     descFocusRequester: FocusRequester = FocusRequester.Default,
 ) {
   Row(
@@ -67,7 +69,8 @@ fun DrillEditor(
           modifier = Modifier.width(48.dp).padding(top = 8.dp),
           isError = drill.minutesStr.isNotEmpty() && !drill.minutesStr.isDigitsOnly(),
           suffix = { Text("m") },
-          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+          keyboardOptions =
+              KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
       )
     }
     Row {
@@ -80,13 +83,9 @@ fun DrillEditor(
               Modifier.weight(1f)
                   .padding(top = 8.dp, bottom = 4.dp)
                   .focusRequester(descFocusRequester),
-          onValueChange = { v ->
-            if (v.contains("\n")) {
-              onDescReturn()
-            } else {
-              update(drill.copy(description = v))
-            }
-          },
+          onValueChange = { update(drill.copy(description = it)) },
+          keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+          keyboardActions = KeyboardActions(onNext = { onDescNext() }),
       )
       IconButton(
           onClick = { delete(drill) },

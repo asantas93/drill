@@ -3,6 +3,7 @@ package com.arissantas.drill.ui
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +28,7 @@ fun CompactTextField(
     suffix: (@Composable () -> Unit)? = null,
     placeholder: (@Composable () -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions(),
+    keyboardActions: KeyboardActions = KeyboardActions(),
 ) {
   val interactionSource = remember { MutableInteractionSource() }
   BasicTextField(
@@ -40,6 +42,7 @@ fun CompactTextField(
       modifier = modifier,
       cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
       keyboardOptions = keyboardOptions,
+      keyboardActions = keyboardActions,
   ) { innerTextField ->
     TextFieldDefaults.DecorationBox(
         interactionSource = interactionSource,
