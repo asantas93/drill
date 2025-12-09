@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -61,7 +62,7 @@ fun MainScreen(
     completeDrill: (Drill) -> Unit,
     uncompleteDrill: (Drill) -> Unit,
     moveTodo: (Int, Int) -> Unit,
-    newDrill: () -> Unit,
+    newDrill: (Int?) -> Unit,
     repeatPrevDay: () -> Unit,
     navigateToSettings: () -> Unit,
 ) {
@@ -111,13 +112,13 @@ fun MainScreen(
           modifier = Modifier.padding(innerPadding),
           verticalArrangement = Arrangement.spacedBy((-1).dp),
       ) {
-        items(todo, key = { it.createdAt }) {
-          val shouldFocus = focused == it.createdAt
-          ReorderableItem(reorderableLazyListState, key = it.createdAt) { isDragging ->
+        itemsIndexed(todo, key = { _, dr -> dr.createdAt }) { i, drill ->
+          val shouldFocus = focused == drill.createdAt
+          ReorderableItem(reorderableLazyListState, key = drill.createdAt) { isDragging ->
             val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
             Surface(shadowElevation = elevation) {
               DrillEditor(
-                  drill = it,
+                  drill = drill,
                   update = updateDrill,
                   delete = deleteDrill,
                   checkAction = completeDrill,
@@ -134,10 +135,11 @@ fun MainScreen(
                           },
                       ),
                   descFocusRequester = if (shouldFocus) focusRequester else FocusRequester.Default,
+                  onDescReturn = { newDrill(i + 1) },
               )
             }
           }
-          if (focused == it.createdAt) {
+          if (focused == drill.createdAt) {
             LaunchedEffect(focused) {
               delay(100)
               focusRequester.requestFocus()
@@ -147,7 +149,7 @@ fun MainScreen(
         }
         item {
           IconButton(
-              onClick = { newDrill() },
+              onClick = { newDrill(null) },
               modifier = Modifier.height(40.dp).fillMaxWidth(),
           ) {
             Row(verticalAlignment = Alignment.CenterVertically) {

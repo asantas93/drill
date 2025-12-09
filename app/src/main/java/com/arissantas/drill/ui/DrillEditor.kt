@@ -41,6 +41,7 @@ fun DrillEditor(
     update: (Drill) -> Unit,
     delete: (Drill) -> Unit,
     dragModifier: Modifier = Modifier,
+    onDescReturn: () -> Unit = {},
     descFocusRequester: FocusRequester = FocusRequester.Default,
 ) {
   Row(
@@ -79,7 +80,13 @@ fun DrillEditor(
               Modifier.weight(1f)
                   .padding(top = 8.dp, bottom = 4.dp)
                   .focusRequester(descFocusRequester),
-          onValueChange = { update(drill.copy(description = it)) },
+          onValueChange = { v ->
+            if (v.contains("\n")) {
+              onDescReturn()
+            } else {
+              update(drill.copy(description = v))
+            }
+          },
       )
       IconButton(
           onClick = { delete(drill) },
