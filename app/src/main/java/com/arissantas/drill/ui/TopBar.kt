@@ -5,51 +5,32 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
+import androidx.compose.ui.unit.dp
 
 @Composable
-fun TopBar(day: Long, setDay: (Long) -> Unit) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        IconButton(
-            onClick = { setDay(day - 1) }
-        ) {
-            Icon(
-                Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "go to previous day",
-                Modifier.size(ButtonDefaults.IconSize)
-            )
-        }
-        val dayText = if (day == LocalDate.now().toEpochDay()) {
-            "Today"
-        } else {
-            LocalDate.ofEpochDay(day).format(
-                DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
-            )
-        }
-        Text(text = dayText)
-        IconButton(
-            onClick = { setDay(day + 1) }
-        ) {
-            Icon(
-                Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "go to next day",
-                Modifier.size(ButtonDefaults.IconSize)
-            )
-        }
+fun TopBar(day: Long, setDay: (Long) -> Unit, navigateToSettings: () -> Unit) {
+  Row(
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically,
+      modifier = Modifier.fillMaxWidth(),
+  ) {
+    IconButton(onClick = {}) {
+      Icon(Icons.Filled.Menu, contentDescription = "open user preferences", Modifier.size(28.dp))
     }
+    DayPicker(day, setDay)
+    IconButton(onClick = navigateToSettings) {
+      Icon(
+          Icons.Filled.Settings,
+          contentDescription = "open user preferences",
+          Modifier.size(24.dp),
+      )
+    }
+  }
 }

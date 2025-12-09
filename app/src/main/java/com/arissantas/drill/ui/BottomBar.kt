@@ -14,28 +14,28 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun BottomBar(
     scheduledToday: Int,
-    completedToday:  Int,
+    completedToday: Int,
     previouslyCompleted: Int,
     previouslyScheduledNotPassed: Int,
     day: Long,
     goal: Int,
 ) {
-        val total = scheduledToday + completedToday
-        val suffix = if (total == 0) "?" else if (scheduledToday == 0) " :)" else ""
-        Row (verticalAlignment = Alignment.CenterVertically) {
-            WeeklyProgress(
-                completed = completedToday + previouslyCompleted,
-                scheduled = scheduledToday + previouslyScheduledNotPassed,
-                goal = goal,
-                day = day,
-                modifier = Modifier.fillMaxHeight().weight(1f)
-            )
-            Text(
-                text = "$scheduledToday/${total}m left\ntoday$suffix",
-                modifier = Modifier.padding(horizontal = 8.dp),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+  val total = scheduledToday + completedToday
+  val suffix = if (total == 0) "?" else if (scheduledToday == 0) " :)" else ""
+  Row(verticalAlignment = Alignment.CenterVertically) {
+    WeeklyProgress(
+        completed = completedToday + previouslyCompleted,
+        scheduled = scheduledToday + previouslyScheduledNotPassed,
+        goal = goal,
+        day = day,
+        modifier = Modifier.fillMaxHeight().weight(1f),
+    )
+    Text(
+        text = "$scheduledToday/${total}m left\ntoday$suffix",
+        modifier = Modifier.padding(horizontal = 8.dp),
+        textAlign = TextAlign.Center,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+  }
 }

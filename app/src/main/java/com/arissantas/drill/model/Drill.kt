@@ -14,13 +14,9 @@ data class DbDrill(
     val minutesStr: String = "",
     val description: String = "",
 ) {
-    fun asUi(): Drill {
-        return Drill(
-            createdAt = createdAt,
-            minutesStr = minutesStr,
-            description = description
-        )
-    }
+  fun asUi(): Drill {
+    return Drill(createdAt = createdAt, minutesStr = minutesStr, description = description)
+  }
 }
 
 data class Drill(
@@ -28,22 +24,22 @@ data class Drill(
     val minutesStr: String = "",
     val description: String = "",
 ) {
-    fun minutes(): Int {
-        return try {
-            minutesStr.toInt()
-        } catch (_: NumberFormatException) {
-            0
-        }
+  fun minutes(): Int {
+    return try {
+      minutesStr.toInt()
+    } catch (_: NumberFormatException) {
+      0
     }
+  }
 
-    fun asDb(day: Long, i: Int, done: Boolean): DbDrill {
-        return DbDrill(
-            createdAt = createdAt,
-            done = done,
-            minutesStr = minutesStr,
-            description = description,
-            i = i,
-            day = day,
-        )
-    }
+  fun asDb(day: Long, i: Int, done: Boolean): DbDrill {
+    return DbDrill(
+        createdAt = createdAt,
+        done = done,
+        minutesStr = minutesStr,
+        description = description,
+        i = i,
+        day = day,
+    )
+  }
 }

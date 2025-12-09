@@ -1,0 +1,7 @@
+package com.arissantas.drill.ui
+
+sealed class Screen(val route: String) {
+  object Home : Screen("home")
+
+  object Settings : Screen("settings")
+}

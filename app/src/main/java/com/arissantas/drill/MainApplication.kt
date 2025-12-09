@@ -6,17 +6,14 @@ import com.arissantas.drill.data.DrillDb
 
 class MainApplication : Application() {
 
-    companion object {
+  companion object {
 
-        lateinit var drillDatabase: DrillDb
-    }
+    lateinit var drillDatabase: DrillDb
+  }
 
-    override fun onCreate() {
-        super.onCreate()
-        drillDatabase = Room.databaseBuilder(
-            applicationContext,
-            DrillDb::class.java,
-            DrillDb.NAME
-        ).build()
-    }
+  override fun onCreate() {
+    super.onCreate()
+    drillDatabase =
+        Room.databaseBuilder(applicationContext, DrillDb::class.java, DrillDb.NAME).build()
+  }
 }

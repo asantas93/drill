@@ -1,4 +1,5 @@
 package com.arissantas.drill.ui
+
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.text.BasicTextField
@@ -27,41 +28,43 @@ fun CompactTextField(
     placeholder: (@Composable () -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions(),
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    BasicTextField(
+  val interactionSource = remember { MutableInteractionSource() }
+  BasicTextField(
+      value = value,
+      onValueChange = onValueChange,
+      textStyle =
+          MaterialTheme.typography.bodyLarge.copy(
+              color = MaterialTheme.colorScheme.onSurface,
+              textAlign = textAlign,
+          ),
+      modifier = modifier,
+      cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+      keyboardOptions = keyboardOptions,
+  ) { innerTextField ->
+    TextFieldDefaults.DecorationBox(
+        interactionSource = interactionSource,
+        innerTextField = innerTextField,
         value = value,
-        onValueChange = onValueChange,
-        textStyle = MaterialTheme.typography.bodyLarge.copy(
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = textAlign,
-        ),
-        modifier = modifier,
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-        keyboardOptions = keyboardOptions,
-    ) { innerTextField ->
-        TextFieldDefaults.DecorationBox(
-            interactionSource = interactionSource,
-            innerTextField = innerTextField,
-            value = value,
-            enabled = true,
-            contentPadding = PaddingValues(horizontal = 4.dp),
-            singleLine = false,
-            suffix = suffix,
-            placeholder = placeholder,
-            container = {
-                TextFieldDefaults.Container(
-                    enabled = true,
-                    interactionSource = interactionSource,
-                    isError = isError,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        disabledContainerColor = MaterialTheme.colorScheme.surface,
-                    ),
-                )
-            },
-            visualTransformation = VisualTransformation.None,
-        )
-    }
+        enabled = true,
+        contentPadding = PaddingValues(horizontal = 4.dp),
+        singleLine = false,
+        suffix = suffix,
+        placeholder = placeholder,
+        container = {
+          TextFieldDefaults.Container(
+              enabled = true,
+              interactionSource = interactionSource,
+              isError = isError,
+              colors =
+                  TextFieldDefaults.colors(
+                      focusedContainerColor = MaterialTheme.colorScheme.surface,
+                      unfocusedIndicatorColor = Color.Transparent,
+                      unfocusedContainerColor = Color.Transparent,
+                      disabledContainerColor = MaterialTheme.colorScheme.surface,
+                  ),
+          )
+        },
+        visualTransformation = VisualTransformation.None,
+    )
+  }
 }

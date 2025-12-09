@@ -38,81 +38,69 @@ fun DrillEditor(
     checkAction: (Drill) -> Unit,
     update: (Drill) -> Unit,
     delete: (Drill) -> Unit,
-    dragModifier: Modifier = Modifier
+    dragModifier: Modifier = Modifier,
 ) {
+  Row(
+      verticalAlignment = Alignment.Top,
+      modifier =
+          Modifier.fillMaxWidth()
+              .height(IntrinsicSize.Min)
+              .border(1.dp, MaterialTheme.colorScheme.primaryContainer),
+  ) {
     Row(
-        verticalAlignment = Alignment.Top,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .border(
-                1.dp,
-                MaterialTheme.colorScheme.primaryContainer
-            ),
+        modifier =
+            dragModifier.fillMaxHeight().background(MaterialTheme.colorScheme.secondaryContainer)
     ) {
-        Row(
-            modifier = dragModifier
-                .fillMaxHeight()
-                .background(MaterialTheme.colorScheme.secondaryContainer)
-        ) {
-            Checkbox(
-                modifier = Modifier
-                    .size(32.dp)
-                    .padding(start = 4.dp, top = 4.dp),
-                checked = done,
-                onCheckedChange = { checkAction(drill) },
-            )
-            CompactTextField(
-                value = drill.minutesStr,
-                onValueChange = { v ->
-                    update(drill.copy(minutesStr = v.filter { it.isDigit() }))
-                },
-                textAlign = TextAlign.End,
-                modifier = Modifier
-                    .width(48.dp)
-                    .padding(top = 8.dp),
-                isError = drill.minutesStr.isNotEmpty() && !drill.minutesStr.isDigitsOnly(),
-                suffix = { Text("m") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            )
-        }
-        Row {
-            CompactTextField(
-                value = drill.description,
-                placeholder = {
-                    Text(
-                        text = "e.g. Bach 2 courante, mm. 1-8, half tempo",
-                        fontStyle = FontStyle.Italic
-                    )
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(top = 8.dp, bottom = 4.dp),
-                onValueChange = { update(drill.copy(description = it)) },
-            )
-            IconButton(
-                onClick = { delete(drill) },
-                modifier = Modifier
-                    .size(32.dp)
-                    .padding(end = 4.dp, top = 8.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "delete this task without completing it",
-                )
-            }
-        }
+      Checkbox(
+          modifier = Modifier.size(32.dp).padding(start = 4.dp, top = 4.dp),
+          checked = done,
+          onCheckedChange = { checkAction(drill) },
+      )
+      CompactTextField(
+          value = drill.minutesStr,
+          onValueChange = { v -> update(drill.copy(minutesStr = v.filter { it.isDigit() })) },
+          textAlign = TextAlign.End,
+          modifier = Modifier.width(48.dp).padding(top = 8.dp),
+          isError = drill.minutesStr.isNotEmpty() && !drill.minutesStr.isDigitsOnly(),
+          suffix = { Text("m") },
+          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+      )
     }
+    Row {
+      CompactTextField(
+          value = drill.description,
+          placeholder = {
+            Text(text = "e.g. Bach 2 courante, mm. 1-8, half tempo", fontStyle = FontStyle.Italic)
+          },
+          modifier = Modifier.weight(1f).padding(top = 8.dp, bottom = 4.dp),
+          onValueChange = { update(drill.copy(description = it)) },
+      )
+      IconButton(
+          onClick = { delete(drill) },
+          modifier = Modifier.size(32.dp).padding(end = 4.dp, top = 8.dp),
+      ) {
+        Icon(
+            imageVector = Icons.Default.Close,
+            contentDescription = "delete this task without completing it",
+        )
+      }
+    }
+  }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewDrillEditor() {
-    DrillEditor(
-        Drill(
-            createdAt = 0,
-            minutesStr = "20",
-            description = "bang your head against the wall, 120bpm"
-        ), done = false, checkAction = {}, update = {}, delete = {}, dragModifier = Modifier
-    )
+  DrillEditor(
+      Drill(
+          createdAt = 0,
+          minutesStr = "20",
+          description = "bang your head against the wall, 120bpm",
+      ),
+      done = false,
+      checkAction = {},
+      update = {},
+      delete = {},
+      dragModifier = Modifier,
+  )
 }
