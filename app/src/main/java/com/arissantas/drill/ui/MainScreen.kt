@@ -26,9 +26,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontStyle
@@ -36,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arissantas.drill.model.Drill
 import com.arissantas.drill.ui.theme.DrillTheme
+import kotlinx.coroutines.delay
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.time.LocalDate
@@ -50,6 +54,8 @@ fun MainScreen(
     goal: Int,
     day: Long,
     setDay: (Long) -> Unit,
+    focused: Long?,
+    onFocusHandled: () -> Unit,
     deleteDrill: (Drill) -> Unit,
     updateDrill: (Drill) -> Unit,
     completeDrill: (Drill) -> Unit,
@@ -89,6 +95,7 @@ fun MainScreen(
       modifier = Modifier.imePadding(),
   ) { innerPadding ->
     if (todo != null && done != null) {
+      val focusRequester = remember { FocusRequester() }
       val hapticFeedback = LocalHapticFeedback.current
 
       val lazyListState = rememberLazyListState()
@@ -105,9 +112,9 @@ fun MainScreen(
           verticalArrangement = Arrangement.spacedBy((-1).dp),
       ) {
         items(todo, key = { it.createdAt }) {
+          val shouldFocus = focused == it.createdAt
           ReorderableItem(reorderableLazyListState, key = it.createdAt) { isDragging ->
             val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
-
             Surface(shadowElevation = elevation) {
               DrillEditor(
                   drill = it,
@@ -126,7 +133,15 @@ fun MainScreen(
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
                           },
                       ),
+                  descFocusRequester = if (shouldFocus) focusRequester else FocusRequester.Default,
               )
+            }
+          }
+          if (focused == it.createdAt) {
+            LaunchedEffect(focused) {
+              delay(100)
+              focusRequester.requestFocus()
+              onFocusHandled()
             }
           }
         }
@@ -220,6 +235,8 @@ fun DummyMain(
         previouslyCompleted = previouslyCompleted,
         goal = goal,
         navigateToSettings = {},
+        focused = null,
+        onFocusHandled = {},
     )
   }
 }

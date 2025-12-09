@@ -22,6 +22,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -39,6 +41,7 @@ fun DrillEditor(
     update: (Drill) -> Unit,
     delete: (Drill) -> Unit,
     dragModifier: Modifier = Modifier,
+    descFocusRequester: FocusRequester = FocusRequester.Default,
 ) {
   Row(
       verticalAlignment = Alignment.Top,
@@ -72,7 +75,10 @@ fun DrillEditor(
           placeholder = {
             Text(text = "e.g. Bach 2 courante, mm. 1-8, half tempo", fontStyle = FontStyle.Italic)
           },
-          modifier = Modifier.weight(1f).padding(top = 8.dp, bottom = 4.dp),
+          modifier =
+              Modifier.weight(1f)
+                  .padding(top = 8.dp, bottom = 4.dp)
+                  .focusRequester(descFocusRequester),
           onValueChange = { update(drill.copy(description = it)) },
       )
       IconButton(

@@ -29,6 +29,7 @@ class DrillViewModel(settingsManager: SettingsManager) : ViewModel() {
   val done: MutableState<List<Drill>?> = mutableStateOf(null)
   val day = mutableStateOf(todayDay())
   val pendingSaves = MutableSharedFlow<Triple<Long, List<Drill>, List<Drill>>>()
+  val focusDrill = mutableStateOf<Long?>(null)
 
   init {
     viewModelScope.launch(Dispatchers.IO) {
@@ -43,6 +44,10 @@ class DrillViewModel(settingsManager: SettingsManager) : ViewModel() {
         drillDao.replaceAll(day, dbDrills)
       }
     }
+  }
+
+  fun onFocusHandled() {
+    focusDrill.value = null
   }
 
   private fun updateDayStateFromCache() {
@@ -136,11 +141,15 @@ class DrillViewModel(settingsManager: SettingsManager) : ViewModel() {
     }
   }
 
-  fun newDrill() {
+  fun newDrill(i: Int? = null) {
+    val createdAt = currentTimeMillis()
     viewModelScope.launch {
       val default = defaultDrillMinutesFlow.first()
-      todo.value =
-          todo.value?.plus(Drill(createdAt = currentTimeMillis(), minutesStr = default.toString()))
+      todo.value = todo.value?.plus(Drill(createdAt = createdAt, minutesStr = default.toString()))
+      if (i != null) {
+        moveTodo(todo.value!!.size - 1, i)
+      }
+      focusDrill.value = createdAt
     }
   }
 

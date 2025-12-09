@@ -51,6 +51,8 @@ class MainActivity : ComponentActivity() {
                   previouslyScheduledNotPassed = dvm.previouslyScheduledNotPassed.value,
                   previouslyCompleted = dvm.previouslyCompleted.value,
                   navigateToSettings = { navController.navigate(Screen.Settings.route) },
+                  focused = dvm.focusDrill.value,
+                  onFocusHandled = dvm::onFocusHandled,
               )
             }
             composable(Screen.Settings.route) {
