@@ -39,7 +39,7 @@ fun ProgressInfoScreen(
       verticalArrangement = Arrangement.spacedBy(16.dp),
   ) {
     Text(
-        "Progress is tracked by week. Today is day $dayOfWeek of 7.",
+        "Progress is tracked by week. This is day $dayOfWeek of 7.",
         style = MaterialTheme.typography.bodyMedium,
     )
     val dayGoalText = buildAnnotatedString {

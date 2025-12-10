@@ -87,7 +87,7 @@ fun WeeklyProgress(
           }
         }
       }
-      if (full > goal) {
+      if (full > goal && goal > 0) {
         Row(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
           Box(
               modifier =
@@ -102,16 +102,18 @@ fun WeeklyProgress(
         }
       }
       Row(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
-        Box(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .fillMaxHeight()
-                    .border(
-                        BorderStroke(1.dp, color = MaterialTheme.colorScheme.onSurfaceVariant),
-                        shape = RoundedCornerShape(4.dp),
-                    )
-                    .weight(goal.toFloat())
-        )
+          if (goal > 0) {
+              Box(
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .fillMaxHeight()
+                          .border(
+                              BorderStroke(1.dp, color = MaterialTheme.colorScheme.onSurfaceVariant),
+                              shape = RoundedCornerShape(4.dp),
+                          )
+                          .weight(goal.toFloat())
+              )
+          }
         if (total > goal) {
           Box(modifier = Modifier.fillMaxWidth().fillMaxHeight().weight(total.toFloat() - goal))
         }
