@@ -15,16 +15,22 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -74,19 +80,38 @@ fun DrillEditor(
       )
     }
     Row {
-      CompactTextField(
-          value = drill.description,
-          placeholder = {
-            Text(text = "e.g. Bach 2 courante, mm. 1-8, half tempo", fontStyle = FontStyle.Italic)
-          },
-          modifier =
-              Modifier.weight(1f)
-                  .padding(top = 8.dp, bottom = 4.dp)
-                  .focusRequester(descFocusRequester),
-          onValueChange = { update(drill.copy(description = it)) },
-          keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-          keyboardActions = KeyboardActions(onNext = { onDescNext() }),
-      )
+      val dropDownExpanded = remember { mutableStateOf(false) }
+      ExposedDropdownMenuBox(
+          expanded = dropDownExpanded.value,
+          onExpandedChange = { dropDownExpanded.value = it },
+          modifier = Modifier.weight(1f),
+      ) {
+        CompactTextField(
+            value = drill.description,
+            placeholder = {
+              Text(text = "e.g. Bach 2 courante, mm. 1-8, half tempo", fontStyle = FontStyle.Italic)
+            },
+            modifier =
+                Modifier.padding(top = 8.dp, bottom = 4.dp)
+                    .focusRequester(descFocusRequester)
+                    .fillMaxWidth()
+                    .menuAnchor(MenuAnchorType.PrimaryEditable)
+                    .onFocusChanged { dropDownExpanded.value = it.isFocused },
+            onValueChange = { update(drill.copy(description = it)) },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { onDescNext() }),
+        )
+        val suggestions = listOf("hi", "there", "buddddy")
+        ExposedDropdownMenu(
+            // Show the dropdown only if there are suggestions
+            expanded = dropDownExpanded.value && suggestions.isNotEmpty(),
+            onDismissRequest = {},
+        ) {
+          suggestions.take(3).forEach { suggestion ->
+            DropdownMenuItem(text = { Text(suggestion) }, onClick = {})
+          }
+        }
+      }
       IconButton(
           onClick = { delete(drill) },
           modifier = Modifier.size(32.dp).padding(end = 4.dp, top = 8.dp),
