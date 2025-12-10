@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import java.time.LocalDate
+import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,8 +65,10 @@ fun ProgressInfoScreen(
     Text(dayGoalText, style = MaterialTheme.typography.bodyMedium)
     val weekText =
         when {
-          completedAll > goal -> "You've exceeded your weekly goal by ${completedAll - goal}m."
-          goal > completedAll -> "You have ${goal - completedAll}m of practice left this week."
+          completedAll > goal ->
+              "You've exceeded your weekly goal by ${(completedAll - goal).minutes}."
+          goal > completedAll ->
+              "You have ${(goal - completedAll).minutes} of practice left this week."
           else -> "You've met your weekly goal."
         }
     Text(
