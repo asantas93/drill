@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -41,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -110,7 +113,7 @@ fun MainScreen(
               )
           }
       },
-      sheetPeekHeight = 75.dp,
+      sheetPeekHeight = 75.dp + with(LocalDensity.current) {WindowInsets.ime.getBottom(LocalDensity.current).toDp()},
       sheetContent = {
         ProgressInfoScreen(
             scheduledToday = todo?.sumOf { it.minutes() } ?: 0,
@@ -119,9 +122,9 @@ fun MainScreen(
             previouslyCompleted = previouslyCompleted,
             goal = goal,
             day = day,
+            modifier = Modifier.imePadding()
         )
       },
-      modifier = Modifier.imePadding(),
   ) { innerPadding ->
     if (todo != null && done != null) {
       val focusRequester = remember { FocusRequester() }

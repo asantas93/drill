@@ -27,13 +27,14 @@ fun ProgressInfoScreen(
     previouslyScheduledNotPassed: Int,
     day: Long,
     goal: Int,
+    modifier: Modifier = Modifier,
 ) {
-  val compPlusSched =
-      scheduledToday + completedToday + previouslyCompleted + previouslyScheduledNotPassed
+  val completedAll = completedToday + previouslyCompleted
+  val compPlusSched = completedAll + scheduledToday + previouslyScheduledNotPassed
   val dayOfWeek = LocalDate.ofEpochDay(day).dayOfWeek.value
   val dayGoal = dayOfWeek * goal / 7
   Column(
-      modifier = Modifier.fillMaxWidth().padding(16.dp),
+      modifier = modifier.fillMaxWidth().padding(16.dp),
       verticalArrangement = Arrangement.spacedBy(16.dp),
   ) {
     Text(
@@ -63,9 +64,8 @@ fun ProgressInfoScreen(
     Text(dayGoalText, style = MaterialTheme.typography.bodyMedium)
     val weekText =
         when {
-          compPlusSched > goal -> "You've exceeded your weekly goal by ${compPlusSched - goal}m."
-          goal > compPlusSched ->
-              "You have ${goal - completedToday - previouslyCompleted}m of practice left this week."
+          completedAll > goal -> "You've exceeded your weekly goal by ${completedAll - goal}m."
+          goal > completedAll -> "You have ${goal - completedAll}m of practice left this week."
           else -> "You've met your weekly goal."
         }
     Text(
