@@ -1,10 +1,14 @@
 package com.arissantas.drill.ui
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -16,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -65,7 +72,8 @@ fun MainScreen(
     repeatPrevDay: () -> Unit,
     navigateToSettings: () -> Unit,
 ) {
-  Scaffold(
+    val scaffoldState = rememberBottomSheetScaffoldState()
+  BottomSheetScaffold(
       topBar = {
         CenterAlignedTopAppBar(
             expandedHeight = 40.dp,
@@ -77,19 +85,40 @@ fun MainScreen(
             title = { TopBar(day, setDay, navigateToSettings) },
         )
       },
-      bottomBar = {
-        BottomAppBar(
-            modifier = Modifier.height(60.dp),
-            content = {
-              BottomBar(
-                  scheduledToday = todo?.sumOf { it.minutes() } ?: 0,
-                  completedToday = done?.sumOf { it.minutes() } ?: 0,
-                  previouslyScheduledNotPassed = previouslyScheduledNotPassed,
-                  previouslyCompleted = previouslyCompleted,
-                  goal = goal,
-                  day = day,
+      scaffoldState = scaffoldState,
+      sheetDragHandle = {
+          Column(horizontalAlignment = Alignment.CenterHorizontally) {
+              Box(
+                  modifier = Modifier
+                      .padding(vertical = 4.dp)
+                      .width(40.dp)
+                      .height(4.dp)
+                      .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), shape = MaterialTheme.shapes.extraLarge)
               )
-            },
+              BottomAppBar(
+                  modifier = Modifier.height(60.dp),
+                  content = {
+                      BottomBar(
+                          scheduledToday = todo?.sumOf { it.minutes() } ?: 0,
+                          completedToday = done?.sumOf { it.minutes() } ?: 0,
+                          previouslyScheduledNotPassed = previouslyScheduledNotPassed,
+                          previouslyCompleted = previouslyCompleted,
+                          goal = goal,
+                          day = day,
+                      )
+                  },
+              )
+          }
+      },
+      sheetPeekHeight = 75.dp,
+      sheetContent = {
+        ProgressInfoScreen(
+            scheduledToday = todo?.sumOf { it.minutes() } ?: 0,
+            completedToday = done?.sumOf { it.minutes() } ?: 0,
+            previouslyScheduledNotPassed = previouslyScheduledNotPassed,
+            previouslyCompleted = previouslyCompleted,
+            goal = goal,
+            day = day,
         )
       },
       modifier = Modifier.imePadding(),
@@ -149,13 +178,17 @@ fun MainScreen(
         item {
           IconButton(
               onClick = { newDrill(null) },
-              modifier = Modifier.height(40.dp).fillMaxWidth(),
+              modifier = Modifier
+                  .height(40.dp)
+                  .fillMaxWidth(),
           ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
               Icon(
                   Icons.Default.Add,
                   contentDescription = "add new drill",
-                  Modifier.height(36.dp).padding(horizontal = 12.dp),
+                  Modifier
+                      .height(36.dp)
+                      .padding(horizontal = 12.dp),
               )
               Text(
                   text = "add a drill...",
@@ -170,13 +203,17 @@ fun MainScreen(
           item {
             IconButton(
                 onClick = { repeatPrevDay() },
-                modifier = Modifier.height(40.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .height(40.dp)
+                    .fillMaxWidth(),
             ) {
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Default.Replay,
                     contentDescription = "copy previous day's drills",
-                    Modifier.height(36.dp).padding(horizontal = 12.dp),
+                    Modifier
+                        .height(36.dp)
+                        .padding(horizontal = 12.dp),
                 )
                 val dayText =
                     if (day == LocalDate.now().toEpochDay()) "yesterday" else "previous day"

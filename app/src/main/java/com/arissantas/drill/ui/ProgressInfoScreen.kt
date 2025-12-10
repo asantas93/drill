@@ -1,15 +1,22 @@
 package com.arissantas.drill.ui
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,40 +28,50 @@ fun ProgressInfoScreen(
     day: Long,
     goal: Int,
 ) {
-  Column(modifier = Modifier.fillMaxSize().padding(16.dp).safeDrawingPadding()) {
+  val compPlusSched =
+      scheduledToday + completedToday + previouslyCompleted + previouslyScheduledNotPassed
+  val dayOfWeek = LocalDate.ofEpochDay(day).dayOfWeek.value
+  val dayGoal = dayOfWeek * goal / 7
+  Column(
+      modifier = Modifier.fillMaxWidth().padding(16.dp),
+      verticalArrangement = Arrangement.spacedBy(16.dp),
+  ) {
     Text(
-        "Weekly Progress",
-        style = MaterialTheme.typography.headlineMedium,
-        modifier = Modifier.padding(bottom = 16.dp),
-    )
-    Text(
-        "Your practice time is tracked by week. The first dark line represents how much time to practice to be on track at the end of the day. The second is for the whole week (it won't be visible if it's a Sunday).",
+        "Progress is tracked by week. Today is day $dayOfWeek of 7.",
         style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.padding(bottom = 16.dp),
     )
+    val dayGoalText = buildAnnotatedString {
+      append("$dayOfWeek/7 of your weekly goal is ${dayGoal}m. ")
+      when {
+        compPlusSched > dayGoal -> {
+          append("You've planned ")
+          withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+            append("${compPlusSched - dayGoal}m")
+          }
+          append(" over this.")
+        }
+        dayGoal > compPlusSched -> {
+          append("Plan ")
+          withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+            append("${dayGoal - compPlusSched}m")
+          }
+          append(" to reach this today.")
+        }
+        else -> append("You're on track for that today.")
+      }
+    }
+    Text(dayGoalText, style = MaterialTheme.typography.bodyMedium)
+    val weekText =
+        when {
+          compPlusSched > goal -> "You've exceeded your weekly goal by ${compPlusSched - goal}m."
+          goal > compPlusSched ->
+              "You have ${goal - completedToday - previouslyCompleted}m of practice left this week."
+          else -> "You've met your weekly goal."
+        }
     Text(
-        "The dark blue bar is how much practice you've completed this week. The light blue is how much you've scheduled today.",
+        weekText,
         style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.padding(bottom = 16.dp),
     )
-    Text(
-        "The number on the left is how your scheduled + completed practice time compares to the your end-of-day goal.",
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.padding(bottom = 16.dp),
-    )
-    Text(
-        "The numbers on the right show how much practice remains today, regardless of your goal.",
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.padding(bottom = 16.dp),
-    )
-
-    BottomBar(
-        scheduledToday = scheduledToday,
-        completedToday = completedToday,
-        previouslyCompleted = previouslyCompleted,
-        previouslyScheduledNotPassed = previouslyScheduledNotPassed,
-        day = day,
-        goal = goal,
-    )
+    Box(modifier = Modifier.height(8.dp))
   }
 }

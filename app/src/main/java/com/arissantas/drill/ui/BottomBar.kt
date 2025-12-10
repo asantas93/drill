@@ -3,10 +3,6 @@ package com.arissantas.drill.ui
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,12 +21,14 @@ fun BottomBar(
     day: Long,
     goal: Int,
 ) {
-  val total = scheduledToday + completedToday
-  val suffix = if (total == 0) "?" else if (scheduledToday == 0) " :)" else ""
+  val dayTotal = scheduledToday + completedToday
+  val weekTotal = dayTotal + previouslyCompleted + previouslyScheduledNotPassed
+  val suffix = if (dayTotal == 0) "?" else if (scheduledToday == 0) " :)" else ""
   Row(verticalAlignment = Alignment.CenterVertically) {
     val dayOfWeek = LocalDate.ofEpochDay(day).dayOfWeek.value
     val dayGoal = dayOfWeek * goal / 7
-    val dayGoalText = if (total >= dayGoal) "+${total - dayGoal}m" else "-${dayGoal - total}m"
+    val dayGoalText =
+        if (weekTotal >= dayGoal) "+${weekTotal - dayGoal}m" else "-${dayGoal - weekTotal}m"
     Row(verticalAlignment = Alignment.CenterVertically) {
       Text(
           text = dayGoalText,
@@ -38,11 +36,6 @@ fun BottomBar(
           style = MaterialTheme.typography.bodySmall,
           textAlign = TextAlign.Center,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
-      )
-      Icon(
-          Icons.Outlined.Info,
-          contentDescription = "view graphic explanation",
-          Modifier.size(20.dp).padding(end = 4.dp),
       )
     }
     WeeklyProgress(
@@ -53,7 +46,7 @@ fun BottomBar(
         modifier = Modifier.fillMaxHeight().weight(1f),
     )
     Text(
-        text = "$scheduledToday/${total}m left\ntoday$suffix",
+        text = "$scheduledToday/${dayTotal}m left\ntoday$suffix",
         modifier = Modifier.padding(horizontal = 8.dp),
         textAlign = TextAlign.Center,
         style = MaterialTheme.typography.bodySmall,
