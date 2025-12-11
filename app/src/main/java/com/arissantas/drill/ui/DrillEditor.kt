@@ -79,7 +79,7 @@ fun DrillEditor(
           value = minutesValue.value,
           onValueChange = { v ->
             val newMin = v.text.filter { it.isDigit() }
-            minutesValue.value = minutesValue.value.copy(newMin, TextRange(newMin.length))
+            minutesValue.value = v.copy(newMin)
             update(drill.copy(minutesStr = newMin))
           },
           textAlign = TextAlign.End,
@@ -137,7 +137,7 @@ fun DrillEditor(
                           .dropLast(1)
                           .map { it.trim() }
                           .plus(suggestion)
-                          .joinToString(", ")
+                          .joinToString(", ") + ", "
                   update(drill.copy(description = newText))
                   textValue.value =
                       textValue.value.copy(text = newText, selection = TextRange(newText.length))
