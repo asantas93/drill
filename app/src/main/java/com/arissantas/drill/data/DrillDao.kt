@@ -25,6 +25,9 @@ interface DrillDao {
   @Query("SELECT * from drill where day = :day order by i ASC")
   suspend fun getForDay(day: Long): List<DbDrill>
 
+  @Query("SELECT description from drill where day >= :start order by day, i ASC")
+  suspend fun getDescriptionsAfter(start: Long): List<String>
+
   @Query("SELECT * from drill where day between :start and :end order by day, i ASC")
   suspend fun getForDays(start: Long, end: Long): List<DbDrill>
 }

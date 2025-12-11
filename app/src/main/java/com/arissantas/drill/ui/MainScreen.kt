@@ -71,6 +71,7 @@ fun MainScreen(
     newDrill: (Int?) -> Unit,
     repeatPrevDay: () -> Unit,
     navigateToSettings: () -> Unit,
+    suggest: (String) -> List<String>,
 ) {
   val scaffoldState = rememberBottomSheetScaffoldState()
   BottomSheetScaffold(
@@ -171,6 +172,7 @@ fun MainScreen(
                       ),
                   descFocusRequester = if (shouldFocus) focusRequester else FocusRequester.Default,
                   onDescNext = { newDrill(i + 1) },
+                suggest = suggest
               )
             }
           }
@@ -233,6 +235,7 @@ fun MainScreen(
               delete = deleteDrill,
               checkAction = uncompleteDrill,
               done = true,
+            suggest = suggest
           )
         }
       }
@@ -274,6 +277,7 @@ fun DummyMain(
         navigateToSettings = {},
         focused = null,
         onFocusHandled = {},
+      suggest = { listOf() }
     )
   }
 }

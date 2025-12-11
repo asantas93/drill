@@ -53,6 +53,7 @@ class MainActivity : ComponentActivity() {
                   navigateToSettings = { navController.navigate(Screen.Settings.route) },
                   focused = dvm.focusDrill.value,
                   onFocusHandled = dvm::onFocusHandled,
+                  suggest = dvm::suggest,
               )
             }
             composable(Screen.Settings.route) {

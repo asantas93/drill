@@ -51,6 +51,7 @@ fun DrillEditor(
     dragModifier: Modifier = Modifier,
     onDescNext: () -> Unit = {},
     descFocusRequester: FocusRequester = FocusRequester.Default,
+    suggest: (String) -> List<String>,
 ) {
   Row(
       verticalAlignment = Alignment.Top,
@@ -86,6 +87,10 @@ fun DrillEditor(
           onExpandedChange = { dropDownExpanded.value = it },
           modifier = Modifier.weight(1f),
       ) {
+        val suggestions =
+            remember(dropDownExpanded.value, drill.description) {
+              if (dropDownExpanded.value) suggest(drill.description) else listOf()
+            }
         CompactTextField(
             value = drill.description,
             placeholder = {
@@ -101,14 +106,14 @@ fun DrillEditor(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { onDescNext() }),
         )
-        val suggestions = listOf("hi", "there", "buddddy")
         ExposedDropdownMenu(
-            // Show the dropdown only if there are suggestions
             expanded = dropDownExpanded.value && suggestions.isNotEmpty(),
             onDismissRequest = {},
         ) {
-          suggestions.take(3).forEach { suggestion ->
-            DropdownMenuItem(text = { Text(suggestion) }, onClick = {})
+          suggestions.forEach { suggestion ->
+            DropdownMenuItem(text = { Text(suggestion) }, onClick = {
+              update(drill.copy(description = drill.description.split(",").dropLast(1).map{it.trim()}.plus(suggestion).joinToString(", ")))
+            })
           }
         }
       }
@@ -139,5 +144,6 @@ fun PreviewDrillEditor() {
       update = {},
       delete = {},
       dragModifier = Modifier,
+    suggest = { listOf() }
   )
 }

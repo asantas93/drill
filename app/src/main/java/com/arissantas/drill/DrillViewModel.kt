@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.arissantas.drill.data.SettingsManager
+import com.arissantas.drill.data.Suggestions
 import com.arissantas.drill.model.Drill
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,6 +20,7 @@ import java.time.LocalTime
 class DrillViewModel(settingsManager: SettingsManager) : ViewModel() {
 
   val drillDao = MainApplication.drillDatabase.drillDao()
+  val suggestions = Suggestions()
   val dayDrillsCache = HashMap<Long, Pair<List<Drill>, List<Drill>>>()
 
   val todo: MutableState<List<Drill>?> = mutableStateOf(null)
@@ -33,6 +35,7 @@ class DrillViewModel(settingsManager: SettingsManager) : ViewModel() {
 
   init {
     viewModelScope.launch(Dispatchers.IO) {
+      loadSuggestions()
       loadWeekDrills(day.value)
       updateDayStateFromCache()
       pendingSaves.debounce(2000L).collectLatest { (day, uiTodo, uiDone) ->
@@ -48,6 +51,10 @@ class DrillViewModel(settingsManager: SettingsManager) : ViewModel() {
 
   fun onFocusHandled() {
     focusDrill.value = null
+  }
+
+  fun suggest(prefix: String): List<String> {
+    return suggestions.suggest(prefix)
   }
 
   private fun updateDayStateFromCache() {
@@ -77,6 +84,10 @@ class DrillViewModel(settingsManager: SettingsManager) : ViewModel() {
       dayDrillsCache.putIfAbsent(day, pair) // ifAbsent correct/needed?
       return pair
     }
+  }
+
+  private suspend fun loadSuggestions() {
+    drillDao.getDescriptionsAfter(day.value - 31).forEach { suggestions.add(it) }
   }
 
   private suspend fun loadWeekDrills(day: Long) {
@@ -154,14 +165,29 @@ class DrillViewModel(settingsManager: SettingsManager) : ViewModel() {
   }
 
   fun deleteDrill(drill: Drill) {
+    suggestions.remove(drill.description)
     todo.value = todo.value?.filter { it.createdAt != drill.createdAt }
     done.value = done.value?.filter { it.createdAt != drill.createdAt }
     saveDrills()
   }
 
   fun updateDrill(drill: Drill) {
-    done.value = done.value?.map { if (it.createdAt == drill.createdAt) drill else it }
-    todo.value = todo.value?.map { if (it.createdAt == drill.createdAt) drill else it }
+    done.value =
+        done.value?.map {
+          if (it.createdAt == drill.createdAt) {
+            suggestions.remove(it.description)
+            suggestions.add(drill.description)
+            drill
+          } else it
+        }
+    todo.value =
+        todo.value?.map {
+          if (it.createdAt == drill.createdAt) {
+            suggestions.remove(it.description)
+            suggestions.add(drill.description)
+            drill
+          } else it
+        }
     saveDrills()
   }
 
