@@ -71,9 +71,17 @@ fun DrillEditor(
           checked = done,
           onCheckedChange = { checkAction(drill) },
       )
+      val minutesValue =
+          remember(drill.minutesStr) {
+            mutableStateOf(TextFieldValue(drill.minutesStr, TextRange(drill.minutesStr.length)))
+          }
       CompactTextField(
-          value = TextFieldValue(drill.minutesStr),
-          onValueChange = { v -> update(drill.copy(minutesStr = v.text.filter { it.isDigit() })) },
+          value = minutesValue.value,
+          onValueChange = { v ->
+            val newMin = v.text.filter { it.isDigit() }
+            minutesValue.value = minutesValue.value.copy(newMin, TextRange(newMin.length))
+            update(drill.copy(minutesStr = newMin))
+          },
           textAlign = TextAlign.End,
           modifier = Modifier.width(48.dp).padding(top = 8.dp),
           isError = drill.minutesStr.isNotEmpty() && !drill.minutesStr.isDigitsOnly(),
