@@ -31,9 +31,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -70,8 +72,8 @@ fun DrillEditor(
           onCheckedChange = { checkAction(drill) },
       )
       CompactTextField(
-          value = drill.minutesStr,
-          onValueChange = { v -> update(drill.copy(minutesStr = v.filter { it.isDigit() })) },
+          value = TextFieldValue(drill.minutesStr),
+          onValueChange = { v -> update(drill.copy(minutesStr = v.text.filter { it.isDigit() })) },
           textAlign = TextAlign.End,
           modifier = Modifier.width(48.dp).padding(top = 8.dp),
           isError = drill.minutesStr.isNotEmpty() && !drill.minutesStr.isDigitsOnly(),
@@ -91,8 +93,12 @@ fun DrillEditor(
             remember(dropDownExpanded.value, drill.description) {
               if (dropDownExpanded.value) suggest(drill.description) else listOf()
             }
+        val textValue =
+            remember(drill.description) {
+              mutableStateOf(TextFieldValue(drill.description, TextRange(drill.description.length)))
+            }
         CompactTextField(
-            value = drill.description,
+            value = textValue.value,
             placeholder = {
               Text(text = "e.g. Bach 2 courante, mm. 1-8, half tempo", fontStyle = FontStyle.Italic)
             },
@@ -102,7 +108,10 @@ fun DrillEditor(
                     .fillMaxWidth()
                     .menuAnchor(MenuAnchorType.PrimaryEditable)
                     .onFocusChanged { dropDownExpanded.value = it.isFocused },
-            onValueChange = { update(drill.copy(description = it)) },
+            onValueChange = {
+              textValue.value = it
+              update(drill.copy(description = it.text))
+            },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { onDescNext() }),
         )
@@ -111,9 +120,22 @@ fun DrillEditor(
             onDismissRequest = {},
         ) {
           suggestions.forEach { suggestion ->
-            DropdownMenuItem(text = { Text(suggestion) }, onClick = {
-              update(drill.copy(description = drill.description.split(",").dropLast(1).map{it.trim()}.plus(suggestion).joinToString(", ")))
-            })
+            DropdownMenuItem(
+                text = { Text(suggestion) },
+                onClick = {
+                  val newText =
+                      drill.description
+                          .split(",")
+                          .dropLast(1)
+                          .map { it.trim() }
+                          .plus(suggestion)
+                          .joinToString(", ")
+                  update(drill.copy(description = newText))
+                  textValue.value =
+                      textValue.value.copy(text = newText, selection = TextRange(newText.length))
+                  dropDownExpanded.value = true
+                },
+            )
           }
         }
       }
@@ -144,6 +166,6 @@ fun PreviewDrillEditor() {
       update = {},
       delete = {},
       dragModifier = Modifier,
-    suggest = { listOf() }
+      suggest = { listOf() },
   )
 }

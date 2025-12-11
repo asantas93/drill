@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -20,8 +21,8 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompactTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
     modifier: Modifier = Modifier,
     textAlign: TextAlign = TextAlign.Start,
     isError: Boolean = false,
@@ -47,7 +48,7 @@ fun CompactTextField(
     TextFieldDefaults.DecorationBox(
         interactionSource = interactionSource,
         innerTextField = innerTextField,
-        value = value,
+        value = value.text,
         enabled = true,
         contentPadding = PaddingValues(horizontal = 4.dp),
         singleLine = false,
