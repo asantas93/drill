@@ -31,16 +31,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
 import com.arissantas.drill.model.Drill
+import com.arissantas.drill.normalizeDrill
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +78,7 @@ fun DrillEditor(
           onCheckedChange = { checkAction(drill) },
       )
       val minutesValue =
-          remember(drill.minutesStr) {
+          remember(drill.createdAt) { // prevents cursor jumps on update
             mutableStateOf(TextFieldValue(drill.minutesStr, TextRange(drill.minutesStr.length)))
           }
       CompactTextField(
@@ -102,9 +108,10 @@ fun DrillEditor(
               if (dropDownExpanded.value) suggest(drill.description) else listOf()
             }
         val textValue =
-            remember(drill.description) {
+            remember(drill.createdAt) { // prevents cursor jumps on update
               mutableStateOf(TextFieldValue(drill.description, TextRange(drill.description.length)))
             }
+        val colorScheme = MaterialTheme.colorScheme
         CompactTextField(
             value = textValue.value,
             placeholder = {
@@ -115,10 +122,29 @@ fun DrillEditor(
                     .focusRequester(descFocusRequester)
                     .fillMaxWidth()
                     .menuAnchor(MenuAnchorType.PrimaryEditable)
-                    .onFocusChanged { dropDownExpanded.value = it.isFocused },
-            onValueChange = {
-              textValue.value = it
-              update(drill.copy(description = it.text))
+                    .onFocusChanged { foc ->
+                      dropDownExpanded.value = foc.isFocused
+                      if (!foc.hasFocus) {
+                        update(drill.copy(description = normalizeDrill(textValue.value.text)))
+                        textValue.value =
+                            textValue.value.copy(text = normalizeDrill(textValue.value.text))
+                      }
+                    },
+            onValueChange = { v ->
+              textValue.value = v
+              update(drill.copy(description = v.text))
+            },
+            visualTransformation = { text ->
+              TransformedText(
+                  buildAnnotatedString {
+                    text.split(",").dropLast(1).forEach { segment ->
+                      append(segment)
+                      withStyle(SpanStyle(color = colorScheme.primaryContainer)) { append(",") }
+                    }
+                    append(text.split(",").last())
+                  },
+                  OffsetMapping.Identity,
+              )
             },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { onDescNext() }),

@@ -30,6 +30,7 @@ fun CompactTextField(
     placeholder: (@Composable () -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions(),
     keyboardActions: KeyboardActions = KeyboardActions(),
+    visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
   val interactionSource = remember { MutableInteractionSource() }
   BasicTextField(
@@ -41,6 +42,7 @@ fun CompactTextField(
               textAlign = textAlign,
           ),
       modifier = modifier,
+      visualTransformation = visualTransformation,
       cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
       keyboardOptions = keyboardOptions,
       keyboardActions = keyboardActions,
