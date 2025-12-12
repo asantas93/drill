@@ -84,7 +84,6 @@ class Suggestions {
       mostRecent[drill] = prev - 1
     }
     segments.drop(1).forEach { segment ->
-      println("seg: '$segment'")
       val prevCt = segmentCounts.remove(segment)!!
       if (prevCt > 1) {
         segmentCounts[segment] = prevCt - 1

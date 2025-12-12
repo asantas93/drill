@@ -45,6 +45,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
+import com.arissantas.drill.applySuggestion
 import com.arissantas.drill.model.Drill
 import com.arissantas.drill.normalizeDrill
 
@@ -103,13 +104,20 @@ fun DrillEditor(
           onExpandedChange = { dropDownExpanded.value = it },
           modifier = Modifier.weight(1f),
       ) {
-        val suggestions =
-            remember(dropDownExpanded.value, drill.description) {
-              if (dropDownExpanded.value) suggest(drill.description) else listOf()
-            }
         val textValue =
             remember(drill.createdAt) { // prevents cursor jumps on update
               mutableStateOf(TextFieldValue(drill.description, TextRange(drill.description.length)))
+            }
+        val suggestions =
+            remember(dropDownExpanded.value, drill.description) {
+              val cursor = textValue.value.selection.start
+              val nextComma = textValue.value.text.indexOf(",", startIndex = cursor)
+              if (dropDownExpanded.value)
+                  suggest(
+                      if (nextComma == -1) textValue.value.text
+                      else textValue.value.text.take(nextComma)
+                  )
+              else listOf()
             }
         val colorScheme = MaterialTheme.colorScheme
         CompactTextField(
@@ -158,12 +166,11 @@ fun DrillEditor(
                 text = { Text(suggestion) },
                 onClick = {
                   val newText =
-                      drill.description
-                          .split(",")
-                          .dropLast(1)
-                          .map { it.trim() }
-                          .plus(suggestion)
-                          .joinToString(", ") + ", "
+                      applySuggestion(
+                          textValue.value.text,
+                          textValue.value.selection.start,
+                          suggestion,
+                      )
                   update(drill.copy(description = newText))
                   textValue.value =
                       textValue.value.copy(text = newText, selection = TextRange(newText.length))
