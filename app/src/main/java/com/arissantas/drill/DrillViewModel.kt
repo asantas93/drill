@@ -30,7 +30,7 @@ class DrillViewModel(settingsManager: SettingsManager) : ViewModel() {
   val defaultDrillMinutesFlow = settingsManager.defaultDrillMinutesFlow
   val done: MutableState<List<Drill>?> = mutableStateOf(null)
   val day = mutableStateOf(todayDay())
-  val pendingSaves = MutableSharedFlow<Triple<Long, List<Drill>, List<Drill>>>()
+  val pendingSaves = mutableMapOf<Long, MutableSharedFlow<Pair<List<Drill>, List<Drill>>>>()
   val focusDrill = mutableStateOf<Long?>(null)
 
   init {
@@ -38,14 +38,6 @@ class DrillViewModel(settingsManager: SettingsManager) : ViewModel() {
       loadSuggestions()
       loadWeekDrills(day.value)
       updateDayStateFromCache()
-      pendingSaves.debounce(2000L).collectLatest { (day, uiTodo, uiDone) ->
-        val dbDrills =
-            uiTodo.mapIndexed { i, drill -> drill.asDb(day = day, i = i, done = false) } +
-                uiDone.mapIndexed { i, drill ->
-                  drill.asDb(day = day, i = i + uiTodo.size, done = true)
-                }
-        drillDao.replaceAll(day, dbDrills)
-      }
     }
   }
 
@@ -137,9 +129,27 @@ class DrillViewModel(settingsManager: SettingsManager) : ViewModel() {
 
   fun saveDrills() {
     if (todo.value != null && done.value != null) {
+      val saveDay = day.value
       dayDrillsCache[day.value] = Pair(todo.value!!, done.value!!)
       viewModelScope.launch(Dispatchers.IO) {
-        pendingSaves.emit(Triple(day.value, todo.value!!, done.value!!))
+        val dayFlow =
+            pendingSaves.getOrPut(saveDay) {
+              val newFlow = MutableSharedFlow<Pair<List<Drill>, List<Drill>>>()
+              launch {
+                newFlow.debounce(2000L).collectLatest { (uiTodo, uiDone) ->
+                  val dbDrills =
+                      uiTodo.mapIndexed { i, drill ->
+                        drill.asDb(day = saveDay, i = i, done = false)
+                      } +
+                          uiDone.mapIndexed { i, drill ->
+                            drill.asDb(day = saveDay, i = i + uiTodo.size, done = true)
+                          }
+                  drillDao.replaceAll(saveDay, dbDrills)
+                }
+              }
+              newFlow
+            }
+        dayFlow.emit(Pair(todo.value!!, done.value!!))
       }
     }
   }
