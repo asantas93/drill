@@ -26,9 +26,13 @@ class Suggestions {
     if (segments.size == 1) {
       return mostRecent
           .reversed()
-          .keys
+          .entries
           .asSequence()
-          .filter { it.lowercase().contains(last) && it != last }
+          .filter {
+            it.key.contains(last, ignoreCase = true) &&
+                (!it.key.equals(last, ignoreCase = true) || it.value > 1)
+          }
+          .map { it.key }
           .take(N)
           .toList()
     } else {
@@ -36,13 +40,13 @@ class Suggestions {
       val highPriority: Sequence<String> =
           mostUsedByDrill[drill]?.reversed()?.asSequence()?.map { it.segment } ?: sequenceOf()
       val lowPriority: Sequence<String> = mostUsed.reversed().asSequence().map { it.segment }
-      val used = segments.drop(1).dropLast(1).toSet()
+      val used = segments.drop(1).dropLast(1).map { it.lowercase() }.toSet()
       return (highPriority + lowPriority)
           .distinct()
           .filter {
-            it.lowercase().contains(last.lowercase()) &&
+            it.contains(last, ignoreCase = true) &&
                 !used.contains(it.lowercase()) &&
-                it != last
+                (!it.equals(last, ignoreCase = true) || segmentCounts[it]!! > 1)
           }
           .take(N)
           .toList()
