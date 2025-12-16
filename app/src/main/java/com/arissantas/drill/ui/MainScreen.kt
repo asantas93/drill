@@ -89,31 +89,31 @@ fun MainScreen(
       },
       scaffoldState = scaffoldState,
       sheetDragHandle = {
-          Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                modifier =
-                    Modifier.padding(vertical = 4.dp)
-                        .width(40.dp)
-                        .height(4.dp)
-                        .background(
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                            shape = MaterialTheme.shapes.extraLarge,
-                        )
-            )
-            BottomAppBar(
-                modifier = Modifier.height(60.dp),
-                content = {
-                  BottomBar(
-                      scheduledToday = todo?.sumOf { it.minutes() } ?: 0,
-                      completedToday = done?.sumOf { it.minutes() } ?: 0,
-                      previouslyScheduledNotPassed = previouslyScheduledNotPassed,
-                      previouslyCompleted = previouslyCompleted,
-                      goal = goal,
-                      day = day,
-                  )
-                },
-            )
-          }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+          Box(
+              modifier =
+                  Modifier.padding(vertical = 4.dp)
+                      .width(40.dp)
+                      .height(4.dp)
+                      .background(
+                          MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                          shape = MaterialTheme.shapes.extraLarge,
+                      )
+          )
+          BottomAppBar(
+              modifier = Modifier.height(60.dp),
+              content = {
+                BottomBar(
+                    scheduledToday = todo?.sumOf { it.minutes() } ?: 0,
+                    completedToday = done?.sumOf { it.minutes() } ?: 0,
+                    previouslyScheduledNotPassed = previouslyScheduledNotPassed,
+                    previouslyCompleted = previouslyCompleted,
+                    goal = goal,
+                    day = day,
+                )
+              },
+          )
+        }
       },
       sheetPeekHeight =
           75.dp +
@@ -174,8 +174,8 @@ fun MainScreen(
                       ),
                   descFocusRequester = if (shouldFocus) focusRequester else FocusRequester.Default,
                   onDescNext = { newDrill(i + 1) },
-                suggest = suggest,
-                clearFocus = {focusManager.clearFocus()},
+                  suggest = suggest,
+                  clearFocus = { focusManager.clearFocus() },
               )
             }
           }
@@ -238,8 +238,8 @@ fun MainScreen(
               delete = deleteDrill,
               checkAction = uncompleteDrill,
               done = true,
-            suggest = suggest,
-            clearFocus = {focusManager.clearFocus()},
+              suggest = suggest,
+              clearFocus = { focusManager.clearFocus() },
           )
         }
       }
@@ -281,7 +281,7 @@ fun DummyMain(
         navigateToSettings = {},
         focused = null,
         onFocusHandled = {},
-      suggest = { listOf() }
+        suggest = { listOf() },
     )
   }
 }
