@@ -17,11 +17,11 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -129,7 +129,6 @@ fun DrillEditor(
                 Modifier.padding(top = 8.dp, bottom = 4.dp)
                     .focusRequester(descFocusRequester)
                     .fillMaxWidth()
-                    .menuAnchor(MenuAnchorType.PrimaryEditable)
                     .onFocusChanged { foc ->
                       dropDownExpanded.value = foc.isFocused
                       if (!foc.hasFocus) {
@@ -160,6 +159,7 @@ fun DrillEditor(
         ExposedDropdownMenu(
             expanded = dropDownExpanded.value && suggestions.isNotEmpty(),
             onDismissRequest = {},
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
         ) {
           suggestions.forEach { suggestion ->
             DropdownMenuItem(
