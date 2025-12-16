@@ -142,6 +142,9 @@ fun DrillEditor(
                       }
                     },
             onValueChange = { v ->
+              if (v.text != textValue.value.text) {
+                dropDownExpanded.value = true
+              }
               textValue.value = v
               update(drill.copy(description = v.text))
             },
@@ -162,7 +165,7 @@ fun DrillEditor(
         )
         ExposedDropdownMenu(
             expanded = dropDownExpanded.value && suggestions.isNotEmpty(),
-            onDismissRequest = {},
+            onDismissRequest = { dropDownExpanded.value = false },
             modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
         ) {
           suggestions.forEach { suggestion ->
