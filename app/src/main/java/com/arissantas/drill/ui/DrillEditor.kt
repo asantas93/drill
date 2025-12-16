@@ -61,6 +61,7 @@ fun DrillEditor(
     onDescNext: () -> Unit = {},
     descFocusRequester: FocusRequester = FocusRequester.Default,
     suggest: (String) -> List<String>,
+    clearFocus: () -> Unit,
 ) {
   Row(
       verticalAlignment = Alignment.Top,
@@ -76,7 +77,10 @@ fun DrillEditor(
       Checkbox(
           modifier = Modifier.size(32.dp).padding(start = 4.dp, top = 4.dp),
           checked = done,
-          onCheckedChange = { checkAction(drill) },
+          onCheckedChange = {
+            checkAction(drill)
+            clearFocus()
+          },
       )
       val minutesValue =
           remember(drill.createdAt) { // prevents cursor jumps on update
@@ -208,5 +212,6 @@ fun PreviewDrillEditor() {
       delete = {},
       dragModifier = Modifier,
       suggest = { listOf() },
+      clearFocus = {},
   )
 }

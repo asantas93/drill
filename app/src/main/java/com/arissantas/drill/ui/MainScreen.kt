@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -143,6 +144,7 @@ fun MainScreen(
             hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
           }
 
+      val focusManager = LocalFocusManager.current
       LazyColumn(
           state = lazyListState,
           modifier = Modifier.padding(innerPadding),
@@ -172,7 +174,8 @@ fun MainScreen(
                       ),
                   descFocusRequester = if (shouldFocus) focusRequester else FocusRequester.Default,
                   onDescNext = { newDrill(i + 1) },
-                suggest = suggest
+                suggest = suggest,
+                clearFocus = {focusManager.clearFocus()},
               )
             }
           }
@@ -235,7 +238,8 @@ fun MainScreen(
               delete = deleteDrill,
               checkAction = uncompleteDrill,
               done = true,
-            suggest = suggest
+            suggest = suggest,
+            clearFocus = {focusManager.clearFocus()},
           )
         }
       }

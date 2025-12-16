@@ -128,6 +128,7 @@ class DrillViewModel(settingsManager: SettingsManager) : ViewModel() {
       val t = currentTimeMillis()
       todo.value =
           (drills.first + drills.second).mapIndexed { i, drill ->
+            suggestions.add(drill.description)
             drill.copy(createdAt = t + i) // add i for uniqueness
           }
       saveDrills()
